@@ -11,6 +11,12 @@ interface DietData {
   processedFoods: number;
 }
 
+const getCumulativeHeight = (data: DietData, currentIndex: number): number => {
+  return Object.values(data)
+    .slice(0, currentIndex)
+    .reduce((sum, value) => sum + value, 0);
+};
+
 const Timeline = () => {
     const [year, setYear] = useState(-500000);
     const TOTAL_YEARS = 502025;
@@ -69,21 +75,22 @@ const Timeline = () => {
   const dietData = getDietData(year);
 
   return (
-    <div className="w-full overflow-x-scroll">
+    // In Timeline.tsx, update the main container div:
+    <div className="w-full overflow-x-scroll h-screen"> {/* Full viewport height */}
       <div 
-        className="h-96 relative" 
+        className="h-[80vh] relative" 
         style={{ width: `${TOTAL_YEARS * PIXEL_TO_YEAR_RATIO}px` }}
       >
         {Object.entries(dietData).map(([category, percentage], index) => (
           <div 
             key={category}
-            className="absolute h-full transition-opacity duration-300"
+            className="absolute transition-opacity duration-300"
             style={{
-              top: `${(index * 100) / Object.keys(dietData).length}%`,
+              top: 0,
               width: '100%',
-              height: `${100 / Object.keys(dietData).length}%`,
-              backgroundColor: getDietColor(category),
-              opacity: percentage / 100
+              height: `${percentage}%`, // Height based on percentage
+              transform: `translateY(${getCumulativeHeight(dietData, index)}%)`,
+              backgroundColor: getDietColor(category)
             }}
           >
             <div className="sticky left-0 text-sm text-white p-1 bg-black bg-opacity-50">
@@ -91,12 +98,6 @@ const Timeline = () => {
             </div>
           </div>
         ))}
-      </div>
-      
-      <div className="fixed bottom-0 left-0 w-full bg-white p-4 shadow-lg">
-        <div className="text-2xl font-bold text-center">
-          Year: {year > 0 ? year + ' CE' : Math.abs(year) + ' BCE'}
-        </div>
       </div>
     </div>
   );
