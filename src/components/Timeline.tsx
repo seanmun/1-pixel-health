@@ -75,29 +75,63 @@ const Timeline = () => {
   const dietData = getDietData(year);
 
   return (
-    // In Timeline.tsx, update the main container div:
-    <div className="w-full overflow-x-scroll h-screen"> {/* Full viewport height */}
-      <div 
-        className="h-[80vh] relative" 
-        style={{ width: `${TOTAL_YEARS * PIXEL_TO_YEAR_RATIO}px` }}
-      >
-        {Object.entries(dietData).map(([category, percentage], index) => (
-          <div 
-            key={category}
-            className="absolute transition-opacity duration-300"
-            style={{
-              top: 0,
-              width: '100%',
-              height: `${percentage}%`, // Height based on percentage
-              transform: `translateY(${getCumulativeHeight(dietData, index)}%)`,
-              backgroundColor: getDietColor(category)
-            }}
-          >
-            <div className="sticky left-0 text-sm text-white p-1 bg-black bg-opacity-50">
-              {formatCategory(category)}: {percentage}%
-            </div>
+<div className="w-full h-screen flex flex-col">
+ {/* Legend bar */}
+ <div className="flex gap-4 p-2 bg-white border-b text-sm">
+   {Object.keys(dietData).map(category => (
+     <div key={category} className="flex items-center gap-1">
+       <div 
+         className="w-3 h-3 rounded-full" 
+         style={{ backgroundColor: getDietColor(category) }} 
+       />
+       <span className="text-xs">{formatCategory(category)}</span>
+     </div>
+   ))}
+ </div>
+ 
+ {/* Graph section */}
+ <div className="h-[45vh] overflow-x-scroll relative">
+   <div 
+     className="h-full"
+     style={{ width: `${TOTAL_YEARS * PIXEL_TO_YEAR_RATIO}px` }}
+   >
+     {Object.entries(dietData).map(([category, percentage], index) => (
+ <div 
+   key={category}
+   className="absolute w-full transition-opacity duration-300"
+   style={{
+     top: `${getCumulativeHeight(dietData, index)}%`,
+     height: `${percentage}%`,
+     backgroundColor: getDietColor(category)
+   }}
+ >
+   <div className="sticky left-4 text-xs text-white px-2 py-1 bg-black bg-opacity-50 rounded"
+     style={{ 
+       position: 'absolute',
+       top: '50%',
+       transform: 'translateY(-50%)',
+       display: percentage < 2 ? 'none' : 'block'
+     }}>
+     {formatCategory(category)} ({percentage}%)
+   </div>
+ </div>
+))}
+   </div>
+        
+        <div className="fixed flex justify-between w-full px-4 py-2 bg-gray-100 border-y border-gray-300">
+          <div className="bg-white p-2 rounded shadow">
+            Viewing: {Math.max(-500000, year - Math.floor(window.innerWidth/2))} BCE
           </div>
-        ))}
+          <div className="bg-white p-2 rounded shadow">
+            to {Math.min(2025, year + Math.floor(window.innerWidth/2))} {year + Math.floor(window.innerWidth/2) > 0 ? 'CE' : 'BCE'}
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex-1 bg-white p-4">
+        <div className="text-2xl font-bold text-center">
+          Current Year: {year > 0 ? year + ' CE' : Math.abs(year) + ' BCE'}
+        </div>
       </div>
     </div>
   );
@@ -109,9 +143,9 @@ const getDietColor = (category: string): string => ({
   fruits: '#FFA94D',
   grains: '#FFD93D',
   nuts: '#A8855D',
-  seedOils: '#FF4040',
-  processedFoods: '#8B4513'
-}[category] || '#000000');
+  seedOils: '#8B3DE4', // Purple
+  processedFoods: '#2563EB' // Blue
+ }[category] || '#000000');
 
 const formatCategory = (category: string): string => 
   category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
