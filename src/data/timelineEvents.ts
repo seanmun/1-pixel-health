@@ -1,3 +1,5 @@
+import { TimelineEvent } from '../types';
+
 export const TIMELINE_EVENTS: TimelineEvent[] = [
     {
       year: -300000,
