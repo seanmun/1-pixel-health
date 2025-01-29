@@ -35,16 +35,25 @@ const Timeline = () => {
     }
   }, []);
 
+  const [showInstructions, setShowInstructions] = useState(true);
+
+
+  // In Timeline.tsx, update the existing useEffect or add a new one
   useEffect(() => {
-    // Find event for current year
-    const event = TIMELINE_EVENTS.find(
-      event => event.year === visibleRange.start && event.type === 'popup'
+    // Find event near current year (within 50 years)
+    const nearbyEvent = TIMELINE_EVENTS.find(
+      event => Math.abs(event.year - visibleRange.start) < 50 && 
+      event.type === 'popup'
     );
 
-    if (event) {
-      setCurrentEvent(event);
-      // Auto-hide popup after 5 seconds
-      const timer = setTimeout(() => setCurrentEvent(null), 5000);
+    if (nearbyEvent && (!currentEvent || currentEvent.year !== nearbyEvent.year)) {
+      setCurrentEvent(nearbyEvent);
+      
+      // Auto-dismiss after 5 seconds
+      const timer = setTimeout(() => {
+        setCurrentEvent(null);
+      }, 5000);
+
       return () => clearTimeout(timer);
     }
   }, [visibleRange.start]);
@@ -72,12 +81,59 @@ const Timeline = () => {
         </div>
       </div>
 
+      {/* Scroll indicators */}
+      <div className="fixed right-6 
+                bg-white shadow-lg rounded-full p-3
+                text-gray-600 flex flex-col items-center
+                animate-pulse"
+     style={{ top: 'calc(12px + (45vh / 2))', transform: 'translateY(-50%)' }}>
+  <div className="text-sm mb-2">Scroll</div>
+  <div className="flex items-center gap-1">
+    <span className="font-bold">shift</span>
+    <span>+</span>
+    <svg 
+      className="w-5 h-5" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2"
+    >
+      <path d="M4 12h16m0 0l-6-6m6 6l-6 6"/>
+    </svg>
+  </div>
+</div>
+
+      {showInstructions && (
+      <div className="fixed top-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 
+                      text-white px-4 py-2 rounded-lg z-50 text-sm">
+        Hold Shift + Mouse Wheel to scroll through time
+        <button 
+          onClick={() => setShowInstructions(false)}
+          className="ml-3 opacity-50 hover:opacity-100"
+        >
+          ×
+        </button>
+      </div>
+    )}
+
       {/* Graph section */}
       <div className="h-[45vh] overflow-x-auto timeline-scroll">
         <div className="h-full" style={{ width: '302025px' }}>
           <DietVisualization year={visibleRange.start} />
         </div>
       </div>
+
+          {/* Year range display - positioned below graph */}
+    <div className="fixed flex justify-between w-full px-4 py-2 bg-gray-100 border-y border-gray-300" 
+         style={{ top: 'calc(45vh + 48px)' }}> {/* 48px accounts for legend height */}
+      <div className="bg-white p-2 rounded shadow text-black">
+        Left: {Math.max(-300000, visibleRange.start - Math.floor(window.innerWidth/2))} BCE
+      </div>
+      <div className="bg-white p-2 rounded shadow text-black">
+        Right: {Math.min(2025, visibleRange.start + Math.floor(window.innerWidth/2))} 
+        {visibleRange.start + Math.floor(window.innerWidth/2) > 0 ? 'CE' : 'BCE'}
+      </div>
+    </div>
 
       {/* Year display */}
       <div className="fixed bottom-0 left-0 right-0 bg-white p-4 text-black">
@@ -87,11 +143,11 @@ const Timeline = () => {
       </div>
 
       {/* Popup */}
-      {currentEvent?.type === 'popup' && currentEvent.content.message && (
-        <Popup 
-          message={currentEvent.content.message}
-          onClose={() => setCurrentEvent(null)}
-        />
+      {currentEvent?.type === 'popup' && (
+      <Popup 
+        message={currentEvent.content.message || ''}
+        onClose={() => setCurrentEvent(null)}
+      />
       )}
     </div>
   );

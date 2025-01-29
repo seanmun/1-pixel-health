@@ -1,39 +1,64 @@
+// src/components/DietVisualization.tsx
 import { getDietColor, getDietData } from '../utils/dietUtils';
 
 interface Props {
   year: number;
 }
 
+interface Layer {
+  category: string;
+  startY: number;
+  endY: number;
+  color: string;
+}
+
 const DietVisualization = ({ year }: Props) => {
   const dietData = getDietData(year);
-  console.log('Year received:', year);
-  console.log('Diet Data:', dietData);
+  const width = 302025;
+  const svgHeight = 100;
+
+  // Calculate layers from bottom to top
+  const calculateLayers = (): Layer[] => {
+    let currentY = 100; // Start from bottom
+    const layers: Layer[] = [];
+
+    Object.entries(dietData).forEach(([category, percentage]) => {
+      const layerHeight = percentage; // Height based on percentage
+      layers.push({
+        category,
+        startY: currentY - layerHeight, // Top of this layer
+        endY: currentY, // Bottom of this layer
+        color: getDietColor(category)
+      });
+      currentY -= layerHeight; // Move up for next layer
+      console.log(`${category}: ${percentage}% - Y from ${currentY} to ${currentY + layerHeight}`);
+    });
+
+    return layers;
+  };
+
+  const layers = calculateLayers();
 
   return (
-    <div className="h-full relative bg-red-500"> {/* Bright color to ensure visibility */}
-      <div className="absolute top-0 left-0 text-black">Debug: Data is rendering</div>
-      {Object.entries(dietData).map(([category, percentage], index) => {
-        console.log(`Processing ${category} with ${percentage}%`);
-        
-        const previousHeight = Object.entries(dietData)
-          .slice(0, index)
-          .reduce((sum, entry) => sum + entry[1], 0);
-
-        return (
-          <div 
-            key={category}
-            className="absolute w-full transition-all duration-500"
-            style={{
-              top: `${previousHeight}%`,
-              height: `${percentage}%`,
-              backgroundColor: getDietColor(category),
-              border: '2px solid black'
-            }}
-          >
-            <span className="text-white">{category}</span>
-          </div>
-        );
-      })}
+    <div className="h-full">
+      <svg 
+        width={width} 
+        height="100%" 
+        viewBox={`0 0 ${width} ${svgHeight}`}
+        preserveAspectRatio="none"
+      >
+        {layers.map((layer) => (
+          <rect
+            key={layer.category}
+            x="0"
+            y={layer.startY + "%"}
+            width="100%"
+            height={`${layer.endY - layer.startY}%`}
+            fill={layer.color}
+            className="transition-all duration-500"
+          />
+        ))}
+      </svg>
     </div>
   );
 };

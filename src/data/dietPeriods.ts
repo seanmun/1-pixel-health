@@ -42,7 +42,7 @@ export const DIET_PERIODS: {
       grains: 20,
       nuts: 5,
       seedOils: 20,
-      processed: 20
+      processed: 20  // This should be visible in blue
     }
   }
 ];
