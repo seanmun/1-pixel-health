@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VisibleRange, TimelineEvent } from '../types';
-import { getDietData, formatCategory, getDietColor } from '../utils/dietUtils';
+import { getDietColor, formatCategory } from '../utils/dietUtils';
 import { TIMELINE_EVENTS } from '../data/timelineEvents';
 import DietVisualization from './DietVisualization';
 import Popup from './Popup';
@@ -45,41 +45,27 @@ const Timeline = () => {
       event => Math.abs(event.year - visibleRange.start) < 50 && 
       event.type === 'popup'
     );
-
-    if (nearbyEvent && (!currentEvent || currentEvent.year !== nearbyEvent.year)) {
+  
+    const shouldShowEvent = nearbyEvent && 
+      (!currentEvent || currentEvent.year !== nearbyEvent.year);
+  
+    if (shouldShowEvent) {
       setCurrentEvent(nearbyEvent);
       
-      // Auto-dismiss after 5 seconds
       const timer = setTimeout(() => {
         setCurrentEvent(null);
       }, 5000);
-
+  
       return () => clearTimeout(timer);
     }
-  }, [visibleRange.start]);
+  }, [visibleRange.start, currentEvent]);
 
-  const dietData = getDietData(visibleRange.start);
+
 
   return (
     <div className="h-screen flex flex-col">
       {/* Fixed legend above graph */}
-      <div className="h-12 bg-white border-b text-sm text-black shadow-md">
-        <div className="flex flex-wrap gap-2 p-2 justify-center md:justify-start">
-          {Object.entries(dietData).map(([category, percentage]) => (
-            percentage > 3 && (
-              <div key={category} className="flex items-center gap-1">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: getDietColor(category) }} 
-                />
-                <span className="text-[10px] md:text-xs">
-                  {formatCategory(category)} ({Math.round(percentage)}%)
-                </span>
-              </div>
-            )
-          ))}
-        </div>
-      </div>
+
 
       {/* Scroll indicators */}
       <div className="fixed right-6 
@@ -116,12 +102,30 @@ const Timeline = () => {
       </div>
     )}
 
-      {/* Graph section */}
-      <div className="h-[45vh] overflow-x-auto timeline-scroll">
-        <div className="h-full" style={{ width: '302025px' }}>
-          <DietVisualization year={visibleRange.start} />
+    {/* Graph section with legend */}
+    <div className="h-[45vh] overflow-x-auto timeline-scroll">
+      {/* Legend - sticky and always visible */}
+      <div className="h-8 bg-white border-b border-gray-200 sticky top-0 left-0 z-10">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-2 py-1">
+          {['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'].map((category) => (
+            <div key={category} className="flex items-center gap-1">
+              <div 
+                className="w-2 h-2 rounded-full shrink-0" 
+                style={{ backgroundColor: getDietColor(category) }} 
+              />
+              <span className="text-xs font-medium whitespace-nowrap">
+                {formatCategory(category)}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* Visualization with remaining height */}
+      <div className="h-[calc(45vh-2rem)]" style={{ width: '302025px' }}>
+        <DietVisualization />
+      </div>
+    </div>
 
           {/* Year range display - positioned below graph */}
     <div className="fixed flex justify-between w-full px-4 py-2 bg-gray-100 border-y border-gray-300" 

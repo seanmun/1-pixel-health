@@ -1,8 +1,11 @@
-// src/utils/dietUtils.ts
 import { DIET_PERIODS } from '../data/dietPeriods';
+import { DietComposition } from '../types';
 
-export const getDietData = (year: number) => {
-  // Find the current period
+const easeInOutQuad = (t: number): number => {
+  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+};
+
+export const getDietData = (year: number): DietComposition => {
   const currentPeriodIndex = DIET_PERIODS.findIndex(period => 
     year >= period.startYear && year <= period.endYear
   );
@@ -14,17 +17,18 @@ export const getDietData = (year: number) => {
   const currentPeriod = DIET_PERIODS[currentPeriodIndex];
   const nextPeriod = DIET_PERIODS[currentPeriodIndex + 1];
 
-  // If we're near a transition point (within 50 years)
-  if (nextPeriod && year >= currentPeriod.endYear - 50) {
-    const transitionProgress = (year - (currentPeriod.endYear - 50)) / 100;
+  // Handle transitions
+  if (nextPeriod && year >= currentPeriod.endYear - 100) {
+    const transitionProgress = (year - (currentPeriod.endYear - 100)) / 100;
+    const eased = easeInOutQuad(Math.min(1, Math.max(0, transitionProgress)));
     
     return Object.keys(currentPeriod.composition).reduce((result, key) => {
-      const dietKey = key as keyof typeof currentPeriod.composition;
+      const dietKey = key as keyof DietComposition;
       const start = currentPeriod.composition[dietKey];
       const end = nextPeriod.composition[dietKey];
-      result[dietKey] = start + (end - start) * Math.min(1, Math.max(0, transitionProgress));
+      result[dietKey] = start + (end - start) * eased;
       return result;
-    }, {} as typeof currentPeriod.composition);
+    }, {} as DietComposition);
   }
 
   return currentPeriod.composition;

@@ -1,65 +1,133 @@
-// src/components/DietVisualization.tsx
-import { getDietColor, getDietData } from '../utils/dietUtils';
+import { useMemo } from 'react';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis } from 'recharts';
+import { getDietColor, getDietData, formatCategory } from '../utils/dietUtils';
+import { DIET_PERIODS } from '../data/dietPeriods';
+import { DietComposition } from '../types';
 
-interface Props {
+interface DataPoint extends DietComposition {
   year: number;
 }
 
-interface Layer {
-  category: string;
-  startY: number;
-  endY: number;
+interface CustomTooltipPayload {
+  value: number;
+  name: string;
   color: string;
 }
 
-const DietVisualization = ({ year }: Props) => {
-  const dietData = getDietData(year);
-  const width = 302025;
-  const svgHeight = 100;
+const formatYear = (year: number) => {
+  return year > 0 ? `${year} CE` : `${Math.abs(year)} BCE`;
+};
 
-  // Calculate layers from bottom to top
-  const calculateLayers = (): Layer[] => {
-    let currentY = 100; // Start from bottom
-    const layers: Layer[] = [];
+const CustomTooltip = ({ 
+  active, 
+  payload, 
+  label 
+}: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    const typedPayload = payload as CustomTooltipPayload[];
+    const year = Number(label);
+    
+    return (
+      <div className="bg-white shadow-xl rounded-lg p-3 border border-gray-200">
+        <p className="font-semibold mb-2">
+          {formatYear(year)}
+        </p>
+        {typedPayload.reverse().map((entry) => (
+          entry.value > 0.01 && (
+            <div key={entry.name} className="flex items-center gap-2 my-1">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: entry.color }} 
+              />
+              <span className="text-sm">
+                {formatCategory(entry.name)}: {(entry.value * 100).toFixed(1)}%
+              </span>
+            </div>
+          )
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
-    Object.entries(dietData).forEach(([category, percentage]) => {
-      const layerHeight = percentage; // Height based on percentage
-      layers.push({
-        category,
-        startY: currentY - layerHeight, // Top of this layer
-        endY: currentY, // Bottom of this layer
-        color: getDietColor(category)
-      });
-      currentY -= layerHeight; // Move up for next layer
-      console.log(`${category}: ${percentage}% - Y from ${currentY} to ${currentY + layerHeight}`);
+const DietVisualization = () => {
+  const data = useMemo(() => {
+    const points: DataPoint[] = [];
+    const allYears: number[] = [];
+    
+    // Add points around transition periods
+    DIET_PERIODS.forEach((period, index) => {
+      if (index < DIET_PERIODS.length - 1) {
+        // Add points before transition
+        for (let y = period.endYear - 100; y < period.endYear; y += 2) {
+          if (!allYears.includes(y)) {
+            allYears.push(y);
+          }
+        }
+        // Add points after transition
+        for (let y = period.endYear; y < period.endYear + 100; y += 2) {
+          if (!allYears.includes(y)) {
+            allYears.push(y);
+          }
+        }
+      }
     });
 
-    return layers;
-  };
+    // Add regular interval points
+    const step = 500;
+    for (let y = -300000; y <= 2025; y += step) {
+      if (!allYears.includes(y)) {
+        allYears.push(y);
+      }
+    }
 
-  const layers = calculateLayers();
+    // Sort years and generate data points
+    allYears.sort((a, b) => a - b);
+    allYears.forEach(y => {
+      const composition = getDietData(y);
+      points.push({
+        year: y,
+        ...composition
+      });
+    });
+
+    return points;
+  }, []);
+
+  const categories = ['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'];
 
   return (
-    <div className="h-full">
-      <svg 
-        width={width} 
-        height="100%" 
-        viewBox={`0 0 ${width} ${svgHeight}`}
-        preserveAspectRatio="none"
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart
+        data={data}
+        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+        stackOffset="expand"
       >
-        {layers.map((layer) => (
-          <rect
-            key={layer.category}
-            x="0"
-            y={layer.startY + "%"}
-            width="100%"
-            height={`${layer.endY - layer.startY}%`}
-            fill={layer.color}
-            className="transition-all duration-500"
+        <XAxis 
+          dataKey="year"
+          type="number"
+          domain={[-300000, 2025]}
+          scale="linear"
+          hide={true}  // Hide the axis but use it for scaling
+        />
+        <Tooltip 
+          content={<CustomTooltip />}
+          labelFormatter={(label) => String(label)}  // Ensure label is passed as-is
+        />
+        {categories.map((category) => (
+          <Area
+            key={category}
+            type="monotone"
+            dataKey={category}
+            stackId="1"
+            stroke={getDietColor(category)}
+            fill={getDietColor(category)}
+            isAnimationActive={false}
           />
         ))}
-      </svg>
-    </div>
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };
 
