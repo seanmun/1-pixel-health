@@ -1,54 +1,89 @@
+// src/data/timelineEvents.ts
 import { TimelineEvent } from '../types';
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
-    {
-      year: -300000,
-      type: 'popup',
-      content: {
-        message: "Early humans faced harsh survival conditions. Average life expectancy was 25-30 years, with infant mortality rates above 50%. Most deaths occurred in the first few years of life."
-      }
-    },
-    {
-      year: -200000,
-      type: 'popup',
-      content: {
-        message: "During peak ice ages, plant foods became scarce in many regions. Humans relied heavily on hunting large game animals for survival, with animal products making up the majority of their diet."
-      }
-    },
-    {
-      year: -100000,
-      type: 'popup',
-      content: {
-        message: "Communities developed sophisticated hunting techniques. Despite harsh conditions, humans showed remarkable adaptation skills, learning to preserve meat through drying and smoking."
-      }
-    },
-    {
-      year: -50000,
-      type: 'popup',
-      content: {
-        message: "Development of better tools and weapons led to more efficient hunting. Communities could now support larger populations, though life remained challenging with high mortality rates."
-      }
-    },
-    {
-      year: -10000,
-      type: 'popup',
-      content: {
-        message: "The beginning of agriculture. Small-scale farming emerged in multiple regions, marking the first time humans actively cultivated plants for food. This gradually reduced dependence on hunting and gathering."
-      }
-    },
-    // Keep existing later events
-    {
-      year: 1800,
-      type: 'popup',
-      content: {
-        message: "Industrial Revolution begins. Introduction of processed foods and significant changes in food preservation methods."
-      }
-    },
-    {
-      year: 1900,
-      type: 'popup',
-      content: {
-        message: "Introduction of industrial seed oils and beginning of modern food processing. This marks the most dramatic shift in human diet since the advent of agriculture."
-      }
+  {
+    year: -300000,
+    type: 'popup',
+    content: {
+      message: "Early Homo sapiens relied heavily on animal-based foods from hunting and scavenging, supplemented by gathered plants, fruits, and nuts."
     }
-  ];
+  },
+  {
+    year: -50000,
+    type: 'popup',
+    content: {
+      message: "Advancements in tool-making improved hunting efficiency, but plant consumption increased slightly as humans migrated to diverse environments."
+    }
+  },
+  {
+    year: -20000,
+    type: 'popup',
+    content: {
+      message: "The peak of the Ice Age limited plant availability, forcing humans to depend more on large game animals for survival."
+    }
+  },
+  {
+    year: -10000,
+    type: 'popup',
+    content: {
+      message: "As the Ice Age ended, warmer climates allowed for more plant diversity and the beginnings of primitive agriculture, reducing dependence on animal foods."
+    }
+  },
+  {
+    year: -5000,
+    type: 'popup',
+    content: {
+      message: "Early farming civilizations emerged, increasing grain consumption while reducing the reliance on hunted animals."
+    }
+  },
+  {
+    year: -1000,
+    type: 'popup',
+    content: {
+      message: "Trade networks and urbanization led to greater grain availability, while livestock farming became more structured, slightly reducing meat consumption."
+    }
+  },
+  {
+    year: 1500,
+    type: 'popup',
+    content: {
+      message: "The Columbian Exchange introduced new crops like potatoes, tomatoes, and maize, diversifying diets but maintaining a reliance on grains and animal farming."
+    }
+  },
+  {
+    year: 1800,
+    type: 'popup',
+    content: {
+      message: "The Agricultural and Industrial Revolutions expanded farming output, making grains the primary calorie source while lowering dependence on animal foods."
+    }
+  },
+  {
+    year: 1900,
+    type: 'popup',
+    content: {
+      message: "Industrialization introduced mass food production and early processing techniques, increasing the availability of cheap grains and seed oils."
+    }
+  },
+  {
+    year: 1950,
+    type: 'popup',
+    content: {
+      message: "Post-war industrialization and food processing innovations led to mass-produced, processed foods and the rise of seed oils."
+    }
+  },
+  {
+    year: 2000,
+    type: 'popup',
+    content: {
+      message: "Modern diets saw peak processed food consumption, with seed oils and refined grains dominating, while animal-based food intake declined."
+    }
+  },
+  {
+    year: 2025,
+    type: 'popup',
+    content: {
+      message: "A growing health-conscious movement and awareness of processed food risks have led to a renewed interest in whole foods, including animal-based and plant-based diets."
+    }
+  }
+];

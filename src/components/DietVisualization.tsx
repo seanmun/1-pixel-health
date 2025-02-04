@@ -40,7 +40,7 @@ const CustomTooltip = ({
                 style={{ backgroundColor: entry.color }} 
               />
               <span className="text-sm">
-                {formatCategory(entry.name)}: {(entry.value * 100).toFixed(1)}%
+                {formatCategory(entry.name)}: {Math.round(entry.value)}%
               </span>
             </div>
           )
@@ -56,20 +56,19 @@ const DietVisualization = () => {
     const points: DataPoint[] = [];
     const allYears: number[] = [];
     
+    // Ensure we have exact boundary points
+    allYears.push(-300000);
+    allYears.push(2025);
+    
     // Add points around transition periods
     DIET_PERIODS.forEach((period, index) => {
       if (index < DIET_PERIODS.length - 1) {
-        // Add points before transition
+        // Add transition points
         for (let y = period.endYear - 100; y < period.endYear; y += 2) {
-          if (!allYears.includes(y)) {
-            allYears.push(y);
-          }
+          allYears.push(y);
         }
-        // Add points after transition
         for (let y = period.endYear; y < period.endYear + 100; y += 2) {
-          if (!allYears.includes(y)) {
-            allYears.push(y);
-          }
+          allYears.push(y);
         }
       }
     });
@@ -77,19 +76,26 @@ const DietVisualization = () => {
     // Add regular interval points
     const step = 500;
     for (let y = -300000; y <= 2025; y += step) {
-      if (!allYears.includes(y)) {
-        allYears.push(y);
-      }
+      allYears.push(y);
     }
 
-    // Sort years and generate data points
-    allYears.sort((a, b) => a - b);
-    allYears.forEach(y => {
-      const composition = getDietData(y);
-      points.push({
-        year: y,
-        ...composition
-      });
+    // Add extra resolution for recent history
+    for (let y = 1800; y <= 2025; y += 5) {
+      allYears.push(y);
+    }
+
+    // Sort and remove duplicates
+    const uniqueYears = [...new Set(allYears)].sort((a, b) => a - b);
+    
+    // Generate data points
+    uniqueYears.forEach(y => {
+      if (y >= -300000 && y <= 2025) {
+        const composition = getDietData(y);
+        points.push({
+          year: y,
+          ...composition
+        });
+      }
     });
 
     return points;
@@ -109,11 +115,13 @@ const DietVisualization = () => {
           type="number"
           domain={[-300000, 2025]}
           scale="linear"
-          hide={true}  // Hide the axis but use it for scaling
+          hide={true}
+          allowDataOverflow={false}
+          interval="preserveStart"
         />
         <Tooltip 
           content={<CustomTooltip />}
-          labelFormatter={(label) => String(label)}  // Ensure label is passed as-is
+          labelFormatter={(label) => String(label)}
         />
         {categories.map((category) => (
           <Area
@@ -124,6 +132,7 @@ const DietVisualization = () => {
             stroke={getDietColor(category)}
             fill={getDietColor(category)}
             isAnimationActive={false}
+            connectNulls={true}
           />
         ))}
       </AreaChart>
