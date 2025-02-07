@@ -23,3 +23,48 @@ body {
 .animate-fade-in {
   animation: fade-in 0.3s ease-in-out;
 }
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.card-enter {
+  animation: slideInFromLeft 0.5s ease-out forwards;
+}
+
+.card-exit {
+  animation: slideOutToLeft 0.5s ease-in forwards;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.card-enter {
+  animation: slideInFromRight 0.5s ease-out forwards;
+}

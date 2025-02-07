@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis, ReferenceLine } from 'recharts';
 import { getDietColor, getDietData, formatCategory } from '../utils/dietUtils';
 import { DIET_PERIODS } from '../data/dietPeriods';
 import { DietComposition } from '../types';
@@ -52,6 +52,19 @@ const CustomTooltip = ({
 };
 
 const DietVisualization = () => {
+  // Generate ruler lines
+  const rulerLines = useMemo(() => {
+    const lines = [];
+    for (let year = -300000; year <= 2025; year += 1000) {
+      const isMajorTick = year % 10000 === 0;
+      lines.push({
+        year,
+        isMajor: isMajorTick
+      });
+    }
+    return lines;
+  }, []);
+
   const data = useMemo(() => {
     const points: DataPoint[] = [];
     const allYears: number[] = [];
@@ -90,10 +103,9 @@ const DietVisualization = () => {
     // Generate data points
     uniqueYears.forEach(y => {
       if (y >= -300000 && y <= 2025) {
-        const composition = getDietData(y);
         points.push({
           year: y,
-          ...composition
+          ...getDietData(y)
         });
       }
     });
@@ -135,6 +147,16 @@ const DietVisualization = () => {
             connectNulls={true}
           />
         ))}
+        {/* Ruler lines */}
+        {rulerLines.map(({year, isMajor}) => (
+        <ReferenceLine
+          key={year}
+          x={year}
+          stroke="rgba(255,255,255,0.3)"
+          strokeWidth={isMajor ? 2 : 1}
+          // removed position="bottom"
+        />
+      ))}
       </AreaChart>
     </ResponsiveContainer>
   );

@@ -3,7 +3,6 @@ import { VisibleRange, TimelineEvent } from '../types';
 import { getDietColor, formatCategory } from '../utils/dietUtils';
 import { TIMELINE_EVENTS } from '../data/timelineEvents';
 import DietVisualization from './DietVisualization';
-import Popup from './Popup';
 import { useRef, useCallback } from 'react';
 
 
@@ -12,7 +11,11 @@ const Timeline = () => {
     start: -300000,
     end: -299000
   });
-  const [currentEvent, setCurrentEvent] = useState<TimelineEvent | null>(null);
+
+  
+  // Replace currentEvent state with
+// Add this state
+const [activeCards, setActiveCards] = useState<TimelineEvent[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +40,6 @@ const Timeline = () => {
     }
   }, []);
 
-  const [showInstructions, setShowInstructions] = useState(true);
 
 
 // Inside Timeline component, add these:
@@ -94,133 +96,115 @@ useEffect(() => {
   }
 }, [handleScroll]);
 
+
+
+
   // In Timeline.tsx, update the event handling
-useEffect(() => {
-  // Find the current event based on year ranges
-  const currentYear = visibleRange.start;
+  useEffect(() => {
+    // Find the current event based on year ranges
+    const currentYear = visibleRange.start;
+    
+    // Find the appropriate event for the current year
+    const newEvent = TIMELINE_EVENTS.reduce((closest, event) => {
+      if (event.year <= currentYear) {
+        return (!closest || event.year > closest.year) ? event : closest;
+      }
+      return closest;
+    }, null as TimelineEvent | null);
   
-  // Find the appropriate event for the current year
-  const currentEvent = TIMELINE_EVENTS.reduce((closest, event) => {
-    if (event.year <= currentYear) {
-      // If this event is before or at our current year and is more recent than our previous closest
-      return (!closest || event.year > closest.year) ? event : closest;
+    if (newEvent) {
+      // Only add the card if it's not already in activeCards
+      if (activeCards.length === 0 || newEvent.year !== activeCards[activeCards.length - 1].year) {
+        if (activeCards.length === 0) {
+          // First card - add without animation
+          setActiveCards([newEvent]);
+        } else {
+          // Add new card to stack
+          setActiveCards(prev => [...prev, newEvent]);
+        }
+      }
     }
-    return closest;
-  }, null as TimelineEvent | null);
-
-  if (currentEvent) {
-    setCurrentEvent(currentEvent);
-  }
-}, [visibleRange.start]); // Only depend on the start year
-
+  }, [visibleRange.start, activeCards]);
 
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Fixed legend above graph */}
-
-
-      {/* Scroll indicators */}
-      <div className="fixed right-6 
-                bg-white shadow-lg rounded-full p-3
-                text-gray-600 flex flex-col items-center
-                animate-pulse"
-     style={{ top: 'calc(12px + (45vh / 2))', transform: 'translateY(-50%)' }}>
-      <div className="text-sm mb-2">Scroll</div>
-      <div className="flex items-center gap-1">
-        <span className="font-bold">shift</span>
-        <span>+</span>
-        <svg 
-          className="w-5 h-5" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2"
-        >
-          <path d="M4 12h16m0 0l-6-6m6 6l-6 6"/>
-        </svg>
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* Fixed legend at top */}
+      <div className="flex-none bg-white border-b border-gray-200">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-2 py-1">
+          {['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'].map((category) => (
+            <div key={category} className="flex items-center gap-1">
+              <div 
+                className="w-2 h-2 rounded-full shrink-0" 
+                style={{ backgroundColor: getDietColor(category) }} 
+              />
+              <span className="text-xs font-medium whitespace-nowrap">
+                {formatCategory(category)}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-
-      {showInstructions && (
-      <div className="fixed top-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 
-                      text-white px-4 py-2 rounded-lg z-50 text-sm">
-        Hold Shift + Mouse Wheel to scroll through time
-        <button 
-          onClick={() => setShowInstructions(false)}
-          className="ml-3 opacity-50 hover:opacity-100"
+  
+      {/* Graph section with year overlay */}
+      <div className="relative h-[45vh] overflow-hidden">
+        <div 
+          ref={scrollContainerRef}
+          className="h-full overflow-x-auto overflow-y-hidden timeline-scroll"
+          style={{ scrollBehavior: 'auto' }}
         >
-          ×
-        </button>
+          <div className="h-full" style={{ width: '302025px' }}>
+            <DietVisualization />
+          </div>
+        </div>
+  
+        {/* Year overlay */}
+        <div className="absolute bottom-2 left-0 right-0 px-4">
+          <div className="flex justify-between text-sm">
+            <div className="bg-black bg-opacity-80 text-white px-2 py-1 rounded">
+              {Math.max(-300000, visibleRange.start)} BCE
+            </div>
+            <div className="bg-black bg-opacity-80 text-white px-2 py-1 rounded">
+              {visibleRange.start + Math.floor(window.innerWidth/2)} 
+              {visibleRange.start + Math.floor(window.innerWidth/2) > 0 ? ' CE' : ' BCE'}
+            </div>
+            <div className="bg-black bg-opacity-80 text-white px-2 py-1 rounded">
+              {Math.min(2025, visibleRange.start + window.innerWidth)} 
+              {visibleRange.start + window.innerWidth > 0 ? ' CE' : ' BCE'}
+            </div>
+          </div>
+        </div>
       </div>
-    )}
-
-{/* Graph section with legend */}
-<div 
-  ref={scrollContainerRef}
-  className="h-[45vh] overflow-x-auto timeline-scroll"
-  style={{ scrollBehavior: 'auto' }}
->
-  {/* Legend - sticky and always visible */}
-  <div className="h-8 bg-white border-b border-gray-200 sticky top-0 left-0 z-10">
-    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-2 py-1">
-      {['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'].map((category) => (
-        <div key={category} className="flex items-center gap-1">
-          <div 
-            className="w-2 h-2 rounded-full shrink-0" 
-            style={{ backgroundColor: getDietColor(category) }} 
-          />
-          <span className="text-xs font-medium whitespace-nowrap">
-            {formatCategory(category)}
-          </span>
+  
+{/* Bottom section for additional information */}
+<div className="flex-1 bg-gray-50 overflow-y-auto">
+  {/* Card Stack */}
+  <div className="p-4">
+    <div className="relative max-w-sm md:max-w-md mx-auto" style={{ height: '200px' }}>
+      {activeCards && activeCards.map((card: TimelineEvent, index: number) => (
+        <div
+          key={card.year}
+          className={`absolute w-full bg-black bg-opacity-80 text-white p-4 rounded-lg shadow-lg transform transition-all duration-500 
+            ${index === activeCards.length - 1 ? 'card-enter border-2 border-white/30' : ''}`}
+          style={{
+            transform: `translateY(${(activeCards.length - index - 1) * 4}px) translateX(${(activeCards.length - index - 1) * 4}px)`,
+            zIndex: index,
+            backgroundColor: `rgba(0, 0, 0, ${0.8 - (activeCards.length - index - 1) * 0.1})` // Slightly vary the opacity
+          }}
+        >
+          <div className="text-sm text-gray-300 mb-2">
+            {card.year > 0 ? `${card.year} CE` : `${Math.abs(card.year)} BCE`}
+          </div>
+          <div className="text-sm md:text-base">
+            {card.content.message || ''}
+          </div>
         </div>
       ))}
     </div>
   </div>
-
-  {/* Visualization with remaining height and snap points */}
-  <div className="h-[calc(45vh-2rem)]" style={{ width: '302025px', position: 'relative' }}>
-    {/* Add snap points for each event */}
-    {TIMELINE_EVENTS.map((event) => (
-      <div
-        key={event.year}
-        className="absolute top-0 bottom-0 w-1"
-        style={{ 
-          left: `${event.year + 300000}px`,
-          scrollSnapAlign: 'center',
-          opacity: 0 // Make the snap points invisible
-        }}
-      />
-    ))}
-    <DietVisualization />
-  </div>
 </div>
 
-          {/* Year range display - positioned below graph */}
-    <div className="fixed flex justify-between w-full px-4 py-2 bg-gray-100 border-y border-gray-300" 
-         style={{ top: 'calc(45vh + 48px)' }}> {/* 48px accounts for legend height */}
-      <div className="bg-white p-2 rounded shadow text-black">
-        Left: {Math.max(-300000, visibleRange.start - Math.floor(window.innerWidth/2))} BCE
-      </div>
-      <div className="bg-white p-2 rounded shadow text-black">
-        Right: {Math.min(2025, visibleRange.start + Math.floor(window.innerWidth/2))} 
-        {visibleRange.start + Math.floor(window.innerWidth/2) > 0 ? 'CE' : 'BCE'}
-      </div>
-    </div>
 
-      {/* Year display */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 text-black">
-        <div className="text-2xl font-bold text-center">
-          {visibleRange.start > 0 ? `${visibleRange.start} CE` : `${Math.abs(visibleRange.start)} BCE`}
-        </div>
-      </div>
-
-      {/* Popup */}
-      {currentEvent?.type === 'popup' && (
-        <Popup 
-          message={currentEvent.content.message || ''}
-        />
-      )}
     </div>
   );
 };
