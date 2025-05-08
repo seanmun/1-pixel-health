@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 import { getDietColor, getDietData, formatCategory } from '../utils/dietUtils';
 import { DIET_PERIODS } from '../data/dietPeriods';
 import { DietComposition } from '../types';
@@ -98,9 +98,22 @@ const DietVisualization = () => {
     // Generate data points
     uniqueYears.forEach(y => {
       if (y >= -300000 && y <= 2025) {
+        // Get the composition data
+        const composition = getDietData(y);
+        
+        // Ensure values sum to 100
+        const sum = Object.values(composition).reduce((acc, val) => acc + val, 0);
+        if (Math.abs(sum - 100) > 0.1) {
+          // Normalize to ensure exactly 100%
+          Object.keys(composition).forEach(key => {
+            composition[key as keyof DietComposition] = 
+              (composition[key as keyof DietComposition] / sum) * 100;
+          });
+        }
+        
         points.push({
           year: y,
-          ...getDietData(y)
+          ...composition
         });
       }
     });
@@ -135,6 +148,10 @@ const DietVisualization = () => {
           hide={true}
           allowDataOverflow={false}
           interval="preserveStart"
+        />
+        <YAxis 
+          domain={[0, 1]}
+          hide={true}
         />
         <Tooltip 
           content={<CustomTooltip />}

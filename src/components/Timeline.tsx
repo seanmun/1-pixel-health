@@ -95,7 +95,7 @@ const Timeline = () => {
         </div>
       )}
 
-      <div className="flex-none bg-white border-b border-gray-200">
+      <div className="flex-none bg-white border-b border-gray-200 pb-0">
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-2 py-1">
           {['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'].map((category) => (
             <div key={category} className="flex items-center gap-1">
@@ -106,7 +106,7 @@ const Timeline = () => {
         </div>
       </div>
 
-      <div className="relative h-[45vh] overflow-hidden">
+      <div className="relative h-[45vh] overflow-hidden mt-[-1px]">
         <div ref={scrollContainerRef} className="h-full overflow-x-auto overflow-y-hidden timeline-scroll" style={{ scrollBehavior: 'auto' }}>
           <div className="h-full" style={{ width: '302025px' }}>
             <DietVisualization />
