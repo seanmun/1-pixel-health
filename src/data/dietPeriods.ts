@@ -16,7 +16,8 @@ export const DIET_PERIODS: {
       grains: 5,
       nuts: 5,
       seedOils: 0,
-      processed: 0
+      processedTraditional: 0,
+      processedModern: 0
     }
   },
   {
@@ -29,7 +30,8 @@ export const DIET_PERIODS: {
       grains: 5,
       nuts: 5,
       seedOils: 0,
-      processed: 0
+      processedTraditional: 0,
+      processedModern: 0
     }
   },
   {
@@ -42,7 +44,8 @@ export const DIET_PERIODS: {
       grains: 5,
       nuts: 5,
       seedOils: 0,
-      processed: 0
+      processedTraditional: 0,
+      processedModern: 0
     }
   },
   {
@@ -55,7 +58,8 @@ export const DIET_PERIODS: {
       grains: 15,
       nuts: 5,
       seedOils: 0,
-      processed: 0
+      processedTraditional: 5,
+      processedModern: 0
     }
   },
   {
@@ -68,7 +72,8 @@ export const DIET_PERIODS: {
       grains: 20,
       nuts: 5,
       seedOils: 0,
-      processed: 5
+      processedTraditional: 5,
+      processedModern: 0
     }
   },
   {
@@ -81,7 +86,8 @@ export const DIET_PERIODS: {
       grains: 25,
       nuts: 5,
       seedOils: 0,
-      processed: 5
+      processedTraditional: 5,
+      processedModern: 0
     }
   },
   {
@@ -94,7 +100,8 @@ export const DIET_PERIODS: {
       grains: 25,
       nuts: 5,
       seedOils: 0,
-      processed: 5
+      processedTraditional: 5,
+      processedModern: 0
     }
   },
   {
@@ -104,10 +111,11 @@ export const DIET_PERIODS: {
       animal: 25,
       vegetables: 20,
       fruits: 15,
-      grains: 30,
+      grains: 25,
       nuts: 5,
       seedOils: 0,
-      processed: 5
+      processedTraditional: 5,
+      processedModern: 5
     }
   },
   {
@@ -116,11 +124,12 @@ export const DIET_PERIODS: {
     composition: {
       animal: 20,
       vegetables: 15,
-      fruits: 15,
-      grains: 30,
+      fruits: 10,
+      grains: 25,
       nuts: 5,
       seedOils: 5,
-      processed: 10
+      processedTraditional: 5,
+      processedModern: 15
     }
   },
   {
@@ -128,12 +137,13 @@ export const DIET_PERIODS: {
     endYear: 2000,
     composition: {
       animal: 15,
-      vegetables: 15,
-      fruits: 10,
-      grains: 30,
+      vegetables: 10,
+      fruits: 5,
+      grains: 25,
       nuts: 5,
       seedOils: 10,
-      processed: 15
+      processedTraditional: 5,
+      processedModern: 25
     }
   },
   {
@@ -141,32 +151,14 @@ export const DIET_PERIODS: {
     endYear: 2025,
     composition: {
       animal: 10,
-      vegetables: 15,
-      fruits: 10,
-      grains: 30,
+      vegetables: 10,
+      fruits: 5,
+      grains: 20,
       nuts: 5,
       seedOils: 15,
-      processed: 15
+      processedTraditional: 5,
+      processedModern: 30
     }
   }
 ];
 
-// Add some metadata about key transitions
-export const SIGNIFICANT_CHANGES = [
-  {
-    year: -20000,
-    description: "Peak Ice Age - Highest animal consumption"
-  },
-  {
-    year: -10000,
-    description: "Dawn of Agriculture - Introduction of grains"
-  },
-  {
-    year: 1900,
-    description: "Industrial Revolution - Introduction of seed oils"
-  },
-  {
-    year: 1950,
-    description: "Post-War - Rise of processed foods"
-  }
-];

@@ -1,3 +1,4 @@
+// src/utils/dietUtils.ts
 import { DIET_PERIODS } from '../data/dietPeriods';
 import { DietComposition } from '../types';
 
@@ -34,8 +35,14 @@ export const getDietData = (year: number): DietComposition => {
   return currentPeriod.composition;
 };
 
-export const formatCategory = (category: string): string => 
-  category.charAt(0).toUpperCase() + category.slice(1);
+export const formatCategory = (category: string): string => {
+  // Special case for processed categories
+  if (category === 'processedTraditional') return 'Traditional Processed';
+  if (category === 'processedModern') return 'Modern Processed';
+  
+  // Default formatting for other categories
+  return category.charAt(0).toUpperCase() + category.slice(1);
+};
 
 export const getDietColor = (category: string): string => ({
   animal: '#FF6B6B',
@@ -44,5 +51,6 @@ export const getDietColor = (category: string): string => ({
   grains: '#FFD93D',
   nuts: '#A8855D',
   seedOils: '#8B3DE4',
-  processed: '#2563EB'
+  processedTraditional: '#6A7D8B', // Muted blue-gray for traditional processing
+  processedModern: '#FF5DA2'       // Bright pink for modern processing
 }[category] || '#000000');

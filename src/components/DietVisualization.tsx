@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis, ReferenceLine } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis } from 'recharts';
 import { getDietColor, getDietData, formatCategory } from '../utils/dietUtils';
 import { DIET_PERIODS } from '../data/dietPeriods';
+import { PROCESSING_TYPES } from '../data/timelineEvents';
 import { DietComposition } from '../types';
 
 interface DataPoint extends DietComposition {
@@ -27,8 +28,15 @@ const CustomTooltip = ({
     const typedPayload = payload as CustomTooltipPayload[];
     const year = Number(label);
     
+    // Check for processing methods present
+    const hasTraditionalProcessing = typedPayload.find(item => 
+      item.name === 'processedTraditional' && item.value > 0.5);
+    
+    const hasModernProcessing = typedPayload.find(item => 
+      item.name === 'processedModern' && item.value > 0.5);
+    
     return (
-      <div className="bg-white shadow-xl rounded-lg p-3 border border-gray-200">
+      <div className="bg-white shadow-xl rounded-lg p-3 border border-gray-200 max-w-xs">
         <p className="font-semibold mb-2">
           {formatYear(year)}
         </p>
@@ -45,6 +53,29 @@ const CustomTooltip = ({
             </div>
           )
         ))}
+        
+        {/* Processing method descriptions */}
+        {hasTraditionalProcessing && (
+          <div className="mt-3 pt-2 border-t border-gray-200">
+            <p className="text-xs font-medium text-gray-600">
+              {PROCESSING_TYPES.traditional.title}:
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              {PROCESSING_TYPES.traditional.description}
+            </p>
+          </div>
+        )}
+        
+        {hasModernProcessing && (
+          <div className="mt-3 pt-2 border-t border-gray-200">
+            <p className="text-xs font-medium text-gray-600">
+              {PROCESSING_TYPES.modern.title}:
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              {PROCESSING_TYPES.modern.description}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -52,19 +83,6 @@ const CustomTooltip = ({
 };
 
 const DietVisualization = () => {
-  // Generate ruler lines
-  const rulerLines = useMemo(() => {
-    const lines = [];
-    for (let year = -300000; year <= 2025; year += 1000) {
-      const isMajorTick = year % 10000 === 0;
-      lines.push({
-        year,
-        isMajor: isMajorTick
-      });
-    }
-    return lines;
-  }, []);
-
   const data = useMemo(() => {
     const points: DataPoint[] = [];
     const allYears: number[] = [];
@@ -113,7 +131,17 @@ const DietVisualization = () => {
     return points;
   }, []);
 
-  const categories = ['processed', 'seedOils', 'grains', 'nuts', 'fruits', 'vegetables', 'animal'];
+  // Updated categories with separate processing types
+  const categories = [
+    'processedModern', 
+    'processedTraditional', 
+    'seedOils', 
+    'grains', 
+    'nuts', 
+    'fruits', 
+    'vegetables', 
+    'animal'
+  ];
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -147,16 +175,6 @@ const DietVisualization = () => {
             connectNulls={true}
           />
         ))}
-        {/* Ruler lines */}
-        {rulerLines.map(({year, isMajor}) => (
-        <ReferenceLine
-          key={year}
-          x={year}
-          stroke="rgba(255,255,255,0.3)"
-          strokeWidth={isMajor ? 2 : 1}
-          // removed position="bottom"
-        />
-      ))}
       </AreaChart>
     </ResponsiveContainer>
   );

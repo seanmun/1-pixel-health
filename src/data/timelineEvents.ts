@@ -6,84 +6,110 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     year: -300000,
     type: 'popup',
     content: {
-      message: "Early Homo sapiens relied heavily on animal-based foods from hunting and scavenging, supplemented by gathered plants, fruits, and nuts."
+      message: "Early Homo sapiens relied heavily on animal-based foods from hunting and scavenging, supplemented by gathered plants, fruits, and nuts. Food was consumed fresh or with minimal processing."
     }
   },
   {
     year: -50000,
     type: 'popup',
     content: {
-      message: "Advancements in tool-making improved hunting efficiency, but plant consumption increased slightly as humans migrated to diverse environments."
+      message: "Advancements in tool-making improved hunting efficiency, but plant consumption increased slightly as humans migrated to diverse environments. Early food processing may have included simple drying and smoking of meat."
     }
   },
   {
     year: -20000,
     type: 'popup',
     content: {
-      message: "The peak of the Ice Age limited plant availability, forcing humans to depend more on large game animals for survival."
+      message: "The peak of the Ice Age limited plant availability, forcing humans to depend more on large game animals for survival. Preservation techniques like freezing in cold climates became important survival strategies."
     }
   },
   {
     year: -10000,
     type: 'popup',
     content: {
-      message: "As the Ice Age ended, warmer climates allowed for more plant diversity and the beginnings of primitive agriculture, reducing dependence on animal foods."
+      message: "As the Ice Age ended, warmer climates allowed for more plant diversity and the beginnings of primitive agriculture. Traditional food processing emerged with early fermentation, drying, and primitive bread-making from wild grains."
     }
   },
   {
     year: -5000,
     type: 'popup',
     content: {
-      message: "Early farming civilizations emerged, increasing grain consumption while reducing the reliance on hunted animals."
+      message: "Early farming civilizations emerged, increasing grain consumption while reducing the reliance on hunted animals. Traditional processing methods expanded to include beer brewing, cheese making, wine production, and more sophisticated bread-making."
     }
   },
   {
     year: -1000,
     type: 'popup',
     content: {
-      message: "Trade networks and urbanization led to greater grain availability, while livestock farming became more structured, slightly reducing meat consumption."
+      message: "Trade networks and urbanization led to greater grain availability and more diverse traditional processing methods. Specialized food crafts emerged, with dedicated bakers, brewers, and cheese makers creating traditionally processed foods for urban populations."
     }
   },
   {
     year: 1500,
     type: 'popup',
     content: {
-      message: "The Columbian Exchange introduced new crops like potatoes, tomatoes, and maize, diversifying diets but maintaining a reliance on grains and animal farming."
+      message: "The Columbian Exchange introduced new crops like potatoes, tomatoes, and maize, diversifying diets. Traditional processing methods adapted to these new foods, creating new fermented, dried, and preserved foods, though all using time-honored techniques."
     }
   },
   {
     year: 1800,
     type: 'popup',
     content: {
-      message: "The Agricultural and Industrial Revolutions expanded farming output, making grains the primary calorie source while lowering dependence on animal foods."
+      message: "The Agricultural and Industrial Revolutions expanded farming output and brought the first modern food processing. Commercial canning was invented, factories began producing foods at scale, and chemical additives started to appear, marking the beginning of modern processing."
     }
   },
   {
     year: 1900,
     type: 'popup',
     content: {
-      message: "Industrialization introduced mass food production and early processing techniques, increasing the availability of cheap grains and seed oils."
+      message: "Industrialization introduced mass food production and early modern processing techniques. Chemical preservatives became common, refined sugar consumption increased dramatically, and the first artificial food colors and flavors appeared in processed foods."
     }
   },
   {
     year: 1950,
     type: 'popup',
     content: {
-      message: "Post-war industrialization and food processing innovations led to mass-produced, processed foods and the rise of seed oils."
+      message: "Post-war industrialization led to the golden age of modern food processing. TV dinners, shelf-stable products, fast food, and highly processed convenience foods became widespread, while traditional processing declined in the home."
     }
   },
   {
     year: 2000,
     type: 'popup',
     content: {
-      message: "Modern diets saw peak processed food consumption, with seed oils and refined grains dominating, while animal-based food intake declined."
+      message: "Modern diets saw peak modern processed food consumption, with ultra-processed products dominating supermarkets. Foods with dozens of ingredients, many artificial, became the norm, while traditional processing methods were largely forgotten in many households."
     }
   },
   {
     year: 2025,
     type: 'popup',
     content: {
-      message: "A growing health-conscious movement and awareness of processed food risks have led to a renewed interest in whole foods, including animal-based and plant-based diets."
+      message: "A growing health-conscious movement has sparked renewed interest in whole foods and traditional processing methods. Fermented foods, traditional bread-making, and other ancient processing techniques are being revived, even as modern ultra-processed foods remain common."
     }
   }
 ];
+
+// Processing type descriptions - can be used in tooltips or information panels
+export const PROCESSING_TYPES = {
+  traditional: {
+    title: "Traditional Processing",
+    description: "Methods developed over thousands of years that use natural preservation and transformation techniques. These typically enhance nutrition and preserve foods without synthetic additives.",
+    examples: [
+      "Fermentation (cheese, yogurt, kefir, kombucha, sauerkraut)",
+      "Drying and smoking (jerky, dried fruits, smoked fish)",
+      "Natural pickling and curing",
+      "Traditional sourdough bread making",
+      "Brewing and wine-making"
+    ]
+  },
+  modern: {
+    title: "Modern Processing",
+    description: "Industrial techniques developed since the 1800s that focus on mass production, shelf stability, uniformity, and convenience, often at the expense of nutritional value.",
+    examples: [
+      "Ultra-processed packaged foods",
+      "Ready-to-eat meals with long shelf life",
+      "Foods with artificial preservatives, colors, and flavors",
+      "Mass-produced refined foods (white flour, refined sugar)",
+      "Factory-made products with dozens of ingredients"
+    ]
+  }
+};
