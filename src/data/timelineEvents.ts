@@ -1,4 +1,4 @@
-// src/data/timelineEvents.ts
+// === FILE: src/data/timelineEvents.ts ===
 import { TimelineEvent } from '../types';
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -6,15 +6,41 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     year: -300000,
     type: 'popup',
     content: {
-      message: "Early Homo sapiens relied heavily on animal-based foods from hunting and scavenging, supplemented by gathered plants, fruits, and nuts. Food was consumed fresh or with minimal processing."
-    }
+      message: "Early Homo sapiens emerged in Africa around 300,000 years ago. They survived harsh climates with no permanent shelter, no energy, no hospitals, and constant threats from predators and rival groups. Their diet was primarily large game, with some gathered plants, fruits, and nuts."
+    },
+    sourceId: "homo-sapiens-diet"
   },
   {
-    year: -50000,
+    year: -280000,
     type: 'popup',
     content: {
-      message: "Advancements in tool-making improved hunting efficiency, but plant consumption increased slightly as humans migrated to diverse environments. Early food processing may have included simple drying and smoking of meat."
-    }
+      message: "Wooden spears became a crucial advancement in this era. These tools allowed humans to hunt large animals more effectively, reducing reliance on scavenging and increasing access to nutrient-dense animal foods."
+    },
+    sourceId: "wooden-spears"
+  },
+  {
+    year: -250000,
+    type: 'popup',
+    content: {
+      message: "The habitual use of fire became widespread. Cooking food improved nutrient absorption and digestion, protected against pathogens, and provided warmth and safety, allowing expansion into colder regions."
+    },
+    sourceId: "fire-usage"
+  },
+  {
+    year: -200000,
+    type: 'popup',
+    content: {
+      message: "Climate fluctuations between glacial and interglacial periods required constant mobility. Populations followed migrating herds and settled near seasonal water sources, living with extreme resource unpredictability."
+    },
+    sourceId: "climate-fluctuations"
+  },
+  {
+    year: -100000,
+    type: 'popup',
+    content: {
+      message: "Humans began showing signs of symbolic behavior: red ochre use, ornamentation, and early burial rituals. This suggests the development of culture, identity, and more complex social structures."
+    },
+    sourceId: "symbolic-behavior"
   },
   {
     year: -20000,
@@ -87,6 +113,7 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     }
   }
 ];
+
 
 // Processing type descriptions - can be used in tooltips or information panels
 export const PROCESSING_TYPES = {

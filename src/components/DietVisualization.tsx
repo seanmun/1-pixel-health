@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps, XAxis } from 'recharts';
 import { getDietColor, getDietData, formatCategory } from '../utils/dietUtils';
 import { DIET_PERIODS } from '../data/dietPeriods';
-import { PROCESSING_TYPES } from '../data/timelineEvents';
 import { DietComposition } from '../types';
 
 interface DataPoint extends DietComposition {
@@ -28,19 +27,20 @@ const CustomTooltip = ({
     const typedPayload = payload as CustomTooltipPayload[];
     const year = Number(label);
     
-    // Check for processing methods present
-    const hasTraditionalProcessing = typedPayload.find(item => 
-      item.name === 'processedTraditional' && item.value > 0.5);
-    
-    const hasModernProcessing = typedPayload.find(item => 
-      item.name === 'processedModern' && item.value > 0.5);
+    // Create a custom order for the tooltip
+    const orderedPayload = [...typedPayload];
+    // Sort according to our desired order
+    orderedPayload.sort((a, b) => {
+      const order = ['animal', 'vegetables', 'fruits', 'nuts', 'grains', 'seedOils', 'processedTraditional', 'processedModern'];
+      return order.indexOf(a.name) - order.indexOf(b.name);
+    });
     
     return (
       <div className="bg-white shadow-xl rounded-lg p-3 border border-gray-200 max-w-xs">
         <p className="font-semibold mb-2">
           {formatYear(year)}
         </p>
-        {typedPayload.reverse().map((entry) => (
+        {orderedPayload.map((entry) => (
           entry.value > 0.01 && (
             <div key={entry.name} className="flex items-center gap-2 my-1">
               <div 
@@ -53,29 +53,6 @@ const CustomTooltip = ({
             </div>
           )
         ))}
-        
-        {/* Processing method descriptions */}
-        {hasTraditionalProcessing && (
-          <div className="mt-3 pt-2 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-600">
-              {PROCESSING_TYPES.traditional.title}:
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              {PROCESSING_TYPES.traditional.description}
-            </p>
-          </div>
-        )}
-        
-        {hasModernProcessing && (
-          <div className="mt-3 pt-2 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-600">
-              {PROCESSING_TYPES.modern.title}:
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              {PROCESSING_TYPES.modern.description}
-            </p>
-          </div>
-        )}
       </div>
     );
   }

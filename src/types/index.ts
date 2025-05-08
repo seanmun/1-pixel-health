@@ -28,4 +28,19 @@ export interface TimelineEvent {
     stats?: HistoricalStats;
     dietComposition?: DietComposition;
   };
+  sourceId?: string; // ✅ add this line
+}
+
+
+export interface DietSource {
+  id: string;
+  note: string;
+  type?: 'archaeological' | 'historical' | 'nutritional' | 'speculative';
+}
+
+export interface DietPeriod {
+  startYear: number;
+  endYear: number;
+  composition: DietComposition;
+  sources?: DietSource[];
 }
