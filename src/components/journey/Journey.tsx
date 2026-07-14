@@ -203,7 +203,7 @@ const Journey = () => {
           className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center px-6 text-center will-change-[opacity,transform]"
         >
           <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.4em] text-white/50">
-            1-Pixel-Health
+            Human Diet
           </div>
           <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.05] text-white md:text-7xl">
             300,000 years

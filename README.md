@@ -1,4 +1,4 @@
-# 1-Pixel-Health: Human Diet Evolution Visualization
+# Human Diet — Evolution Visualization
 
 An interactive visualization showing 300,000 years of human dietary changes. Each pixel represents one year of history, revealing how our diet composition has dramatically shifted, especially in the last 150 years.
 

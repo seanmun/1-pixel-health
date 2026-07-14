@@ -1,9 +1,9 @@
 {
-  "name": "1-pixel-health",
+  "name": "human-diet",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://seanmun.github.io/1-pixel-health",
+  "homepage": "https://human-diet.com",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

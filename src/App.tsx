@@ -25,7 +25,7 @@ function App() {
             className="flex items-center gap-2 text-sm font-bold tracking-tight"
           >
             <span className="inline-block h-2.5 w-2.5 rounded-sm bg-gradient-to-br from-[#FF6B6B] to-[#FF5DA2]" />
-            1-Pixel-Health
+            Human Diet
           </button>
           <div className="flex items-center gap-1">
             {NAV.map((item) => (
