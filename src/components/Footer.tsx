@@ -19,7 +19,7 @@ const Footer = () => {
         <div>
           <p className="mb-1 font-semibold text-white">Built by Sean Munley</p>
           <div className="mt-2 flex justify-center gap-4 md:justify-start">
-            <a href="https://twitter.com/seanmunley" target="_blank" rel="noopener noreferrer">
+            <a href="https://twitter.com/seanmun" target="_blank" rel="noopener noreferrer">
               <Twitter className="h-5 w-5 transition hover:text-[#FF5DA2]" />
             </a>
             <a href="https://linkedin.com/in/sean-munley" target="_blank" rel="noopener noreferrer">
