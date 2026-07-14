@@ -39,7 +39,8 @@ export const formatCategory = (category: string): string => {
   // Special case for processed categories
   if (category === 'processedTraditional') return 'Traditional Processed';
   if (category === 'processedModern') return 'Modern Processed';
-  
+  if (category === 'seedOils') return 'Seed Oils';
+
   // Default formatting for other categories
   return category.charAt(0).toUpperCase() + category.slice(1);
 };

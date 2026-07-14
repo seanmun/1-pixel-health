@@ -2,23 +2,30 @@ import { SOURCE_MAP } from '../data/sources';
 
 const Sources = () => {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Sources & References</h1>
-      <ul className="space-y-4">
+    <div className="mx-auto max-w-3xl px-4 py-12 md:py-16">
+      <h1 className="text-3xl font-extrabold md:text-4xl">Sources & References</h1>
+      <p className="mt-2 max-w-2xl text-white/50">
+        Dietary compositions are estimates synthesized from archaeological,
+        anthropological, historical, and nutritional research.
+      </p>
+      <ul className="mt-10 space-y-3">
         {Object.entries(SOURCE_MAP).map(([id, source]) => (
-          <li key={id} className="border border-gray-200 p-4 rounded bg-white shadow">
+          <li
+            key={id}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20 hover:bg-white/[0.05]"
+          >
             <h2 className="text-lg font-semibold">{source.title}</h2>
-            <p className="text-sm text-gray-600">
-              <span className="italic">{source.author}</span>, {source.year}
+            <p className="mt-0.5 text-sm text-white/45">
+              <span className="italic">{source.author}</span> · {source.year}
             </p>
-            <p className="text-sm mt-2">{source.summary}</p>
-            <a 
-              href={source.link} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-blue-500 hover:underline text-sm mt-2 inline-block"
+            <p className="mt-2 text-sm text-white/70">{source.summary}</p>
+            <a
+              href={source.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#FF5DA2] hover:underline"
             >
-              View Source
+              View source →
             </a>
           </li>
         ))}

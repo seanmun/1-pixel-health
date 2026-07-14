@@ -3,16 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+/* Hide scrollbars on the horizontally-scrollable mobile legend */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html {
+  scroll-behavior: auto;
 }
 
 body {
   margin: 0;
+  background: #0a0a0f;
+  color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 @keyframes fade-in {
