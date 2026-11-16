@@ -13,7 +13,8 @@ An interactive visualization showing 300,000 years of human dietary changes. Eac
 - React 18 with TypeScript
 - Vite for fast development and building
 - Tailwind CSS for styling
-- Recharts for data visualization
+- three.js for the walkable 3D world (falls back to a 2D canvas streamgraph without WebGL)
+- Framer Motion for scroll-driven animation
 - GitHub Pages for deployment
 
 ## Building and Running

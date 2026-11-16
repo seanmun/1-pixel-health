@@ -2,13 +2,15 @@ import { useState } from 'react';
 import Journey from './components/journey/Journey';
 import Sources from './components/Sources';
 import Categories from './components/Categories';
+import Objects from './components/Objects';
 import Footer from './components/Footer';
 
-type View = 'journey' | 'categories' | 'sources';
+type View = 'journey' | 'categories' | 'objects' | 'sources';
 
 const NAV: { id: View; label: string }[] = [
   { id: 'journey', label: 'Journey' },
   { id: 'categories', label: 'Categories' },
+  { id: 'objects', label: 'Objects' },
   { id: 'sources', label: 'Sources' },
 ];
 
@@ -25,14 +27,14 @@ function App() {
             className="flex items-center gap-2 text-sm font-bold tracking-tight"
           >
             <span className="inline-block h-2.5 w-2.5 rounded-sm bg-gradient-to-br from-[#FF6B6B] to-[#FF5DA2]" />
-            Human Diet
+            <span className="hidden whitespace-nowrap min-[430px]:inline">Human Diet</span>
           </button>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1">
             {NAV.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setView(item.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition md:text-sm ${
+                className={`rounded-full px-2 py-1.5 text-xs md:px-3 font-medium transition md:text-sm ${
                   view === item.id
                     ? 'bg-white/10 text-white'
                     : 'text-white/50 hover:text-white/80'
@@ -50,6 +52,11 @@ function App() {
         {view === 'categories' && (
           <div className="pt-14">
             <Categories />
+          </div>
+        )}
+        {view === 'objects' && (
+          <div className="pt-14">
+            <Objects />
           </div>
         )}
         {view === 'sources' && (

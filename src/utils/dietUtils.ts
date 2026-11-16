@@ -18,9 +18,12 @@ export const getDietData = (year: number): DietComposition => {
   const currentPeriod = DIET_PERIODS[currentPeriodIndex];
   const nextPeriod = DIET_PERIODS[currentPeriodIndex + 1];
 
-  // Handle transitions
-  if (nextPeriod && year >= currentPeriod.endYear - 100) {
-    const transitionProgress = (year - (currentPeriod.endYear - 100)) / 100;
+  // Handle transitions: ease into the next period over the final 100 years
+  // (or the whole period, when it is shorter than that — otherwise the
+  // composition would jump at the start of short modern periods).
+  const window = Math.min(100, currentPeriod.endYear - currentPeriod.startYear);
+  if (nextPeriod && year >= currentPeriod.endYear - window) {
+    const transitionProgress = (year - (currentPeriod.endYear - window)) / window;
     const eased = easeInOutQuad(Math.min(1, Math.max(0, transitionProgress)));
     
     return Object.keys(currentPeriod.composition).reduce((result, key) => {

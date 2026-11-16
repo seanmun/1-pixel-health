@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   motion,
   AnimatePresence,
@@ -7,13 +7,15 @@ import {
   useMotionValueEvent,
 } from 'framer-motion';
 import StreamGraph from './StreamGraph';
+import WorldScene from './world/WorldScene';
+import { WORLD_LEN } from './world/scenery';
 import { CHAPTERS } from '../../data/chapters';
+import { vitalsAt } from '../../data/vitals';
 import {
   cameraWindow,
   formatYear,
-  formatSpan,
-  MIN_SPAN,
-  YEAR_MAX,
+  yearAtProgress,
+  ZOOM_PORTION,
 } from '../../utils/timeScale';
 import { getDietData, getDietColor, formatCategory } from '../../utils/dietUtils';
 import { DietComposition } from '../../types';
@@ -31,23 +33,59 @@ const LEGEND: (keyof DietComposition)[] = [
 
 // Scroll fractions carved out for the intro hero and closing panel.
 const REVEAL_START = 0.08;
-const REVEAL_END = 0.92;
-// Portion of the reveal spent zooming in; the remainder "dwells" on the modern
-// window while the final chapters play out.
-const ZOOM_PORTION = 0.78;
+const REVEAL_END = 0.9;
+const OUTRO_START = 0.92;
+
+// Share of the viewport height given to the truthful (linear) timeline strip.
+const STRIP_RATIO = 0.13;
+// Length of one walking step in world units, for the "years per step" readout.
+const STEP_LENGTH = 0.75;
 
 type Phase = 'intro' | 'reveal' | 'outro';
 
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+/** How much time one step covers at journey progress p. */
+const paceLabel = (p: number): string => {
+  const e = 0.002;
+  const a = Math.max(0, Math.min(1 - e, p));
+  const yearsPerUnit = (yearAtProgress(a + e) - yearAtProgress(a)) / (e * WORLD_LEN);
+  const perStep = yearsPerUnit * STEP_LENGTH;
+  if (perStep >= 10) return `1 step ≈ ${Math.round(perStep).toLocaleString()} years`;
+  if (perStep >= 1.5) return `1 step ≈ ${perStep.toFixed(1)} years`;
+  return `1 step ≈ ${Math.max(1, Math.round(perStep * 12))} months`;
+};
+
+const STATS = [
+  { key: 'life', label: 'Life expectancy', hint: 'mean, from birth' },
+  { key: 'median', label: 'Median age at death', hint: 'half had died by' },
+  { key: 'height', label: 'Height', hint: 'adult male' },
+  { key: 'weight', label: 'Weight', hint: 'adult male' },
+  { key: 'energy', label: 'Energy per person', hint: 'all sources, per year' },
+  { key: 'upf', label: 'Seed oils + ultra-processed', hint: 'share of diet' },
+] as const;
+type StatKey = (typeof STATS)[number]['key'];
+
+const statValues = (year: number): Record<StatKey, string> => {
+  const v = vitalsAt(year);
+  const comp = getDietData(year);
+  return {
+    life: `${Math.round(v.lifeExpectancy)} yrs`,
+    median: `${Math.round(v.medianAgeAtDeath)} yrs`,
+    height: `${Math.round(v.heightCm)} cm`,
+    weight: `${Math.round(v.weightKg)} kg`,
+    energy: `${(Math.round(v.energyKwh / 100) * 100).toLocaleString()} kWh`,
+    upf: `${Math.round(comp.seedOils + comp.processedModern)}%`,
+  };
+};
 
 const Journey = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<HTMLDivElement>(null);
 
   // Imperatively-updated DOM (no per-frame React renders).
   const yearRef = useRef<HTMLSpanElement>(null);
-  const metaRef = useRef<HTMLSpanElement>(null);
+  const paceRef = useRef<HTMLSpanElement>(null);
+  const statRefs = useRef<Partial<Record<StatKey, HTMLSpanElement | null>>>({});
   const leftAxisRef = useRef<HTMLSpanElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
@@ -60,27 +98,30 @@ const Journey = () => {
     offset: ['start start', 'end end'],
   });
 
-  // Camera zoom [0,1] consumed by StreamGraph.
+  // Journey progress [0,1] drives the walking world; zoom [0,1] drives the
+  // linear timeline strip's camera.
+  const progressMV = useMotionValue(0);
   const zoomMV = useMotionValue(0);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('intro');
+  // Without WebGL we fall back to the full-height 2D streamgraph.
+  const [webgl, setWebgl] = useState(true);
+  const onUnavailable = useCallback(() => setWebgl(false), []);
 
   const chapterYears = useMemo(() => CHAPTERS.map((c) => c.year), []);
+  const initialStats = useMemo(() => statValues(yearAtProgress(0)), []);
 
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
     const p = clamp01((v - REVEAL_START) / (REVEAL_END - REVEAL_START));
     const z = Math.min(1, p / ZOOM_PORTION);
+    progressMV.set(p);
     zoomMV.set(z);
 
-    const { start: viewStart, span } = cameraWindow(z);
-
-    // The era we're currently narrating. During the zoom it's the oldest year
-    // on screen; during the closing dwell it sweeps across the modern window.
-    const focus =
-      p < ZOOM_PORTION
-        ? viewStart
-        : lerp(YEAR_MAX - MIN_SPAN, YEAR_MAX, (p - ZOOM_PORTION) / (1 - ZOOM_PORTION));
+    // The year the walkers are in. While the strip's camera zooms it is the
+    // oldest year on the strip; afterwards it sweeps across the modern window.
+    const focus = yearAtProgress(p);
+    const { start: viewStart } = cameraWindow(z);
 
     // Intro / hint / outro / progress bar.
     if (introRef.current) {
@@ -89,7 +130,9 @@ const Journey = () => {
       introRef.current.style.transform = `translateY(${-50 * t}px)`;
     }
     if (hintRef.current) hintRef.current.style.opacity = `${1 - clamp01(v / 0.03)}`;
-    if (outroRef.current) outroRef.current.style.opacity = `${clamp01((p - 0.9) / 0.08)}`;
+    // The closing panel waits until the walk has fully reached the present.
+    if (outroRef.current)
+      outroRef.current.style.opacity = `${clamp01((v - OUTRO_START) / (1 - OUTRO_START - 0.02))}`;
     if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
     // The opening thesis annotation only reads while we're still zoomed out.
     if (annotationRef.current)
@@ -97,11 +140,11 @@ const Journey = () => {
 
     // Live HUD.
     if (yearRef.current) yearRef.current.textContent = formatYear(focus);
-    if (metaRef.current) {
-      const comp = getDietData(focus);
-      metaRef.current.textContent = `${formatSpan(span)} yrs on screen · ${Math.round(
-        comp.seedOils + comp.processedModern
-      )}% ultra-processed`;
+    if (paceRef.current) paceRef.current.textContent = paceLabel(p);
+    const values = statValues(focus);
+    for (const s of STATS) {
+      const el = statRefs.current[s.key];
+      if (el) el.textContent = values[s.key];
     }
     if (leftAxisRef.current) leftAxisRef.current.textContent = formatYear(viewStart);
 
@@ -113,23 +156,39 @@ const Journey = () => {
     setActiveIndex((prev) => (prev === idx ? prev : idx));
 
     const next: Phase =
-      v < REVEAL_START * 0.9 ? 'intro' : p > 0.92 ? 'outro' : 'reveal';
+      v < REVEAL_START * 0.9 ? 'intro' : v > OUTRO_START + 0.01 ? 'outro' : 'reveal';
     setPhase((prev) => (prev === next ? prev : next));
   });
 
   const active = CHAPTERS[activeIndex];
+  const stripTop = `${STRIP_RATIO * 100}svh`;
 
   return (
     <div ref={containerRef} className="relative bg-[#0a0a0f]" style={{ height: '900vh' }}>
-      <div
-        ref={sceneRef}
-        className="sticky top-0 h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]"
-      >
-        <StreamGraph zoom={zoomMV} heightRatio={0.82} />
+      <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]">
+        {/* The walking world */}
+        {webgl && <WorldScene progress={progressMV} onUnavailable={onUnavailable} />}
+
+        {/* The truthful timeline: linear in years, present pinned right. A thin
+            strip under the world, or the whole scene if WebGL is unavailable. */}
+        {webgl && (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#07070c]"
+            style={{ height: stripTop }}
+          />
+        )}
+        <StreamGraph zoom={zoomMV} heightRatio={webgl ? STRIP_RATIO : 0.82} />
 
         {/* Legibility gradients */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#05050a]/90 via-[#05050a]/30 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#05050a]/85 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-[#05050a]/85 via-[#05050a]/30 to-transparent" />
+        {/* Scrim behind the HUD + chapter card column (desktop) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[620px] bg-gradient-to-r from-[#05050a]/80 via-[#05050a]/45 to-transparent md:block" />
+        {/* Scrim behind the HUD (mobile) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[17rem] bg-gradient-to-b from-[#05050a]/85 via-[#05050a]/60 to-transparent md:hidden" />
+        <div
+          className="pointer-events-none absolute inset-x-0 h-24 bg-gradient-to-t from-[#05050a]/70 to-transparent"
+          style={{ bottom: webgl ? stripTop : 0 }}
+        />
 
         {/* Climax vignette pulse */}
         <AnimatePresence>
@@ -156,51 +215,82 @@ const Journey = () => {
           style={{ transform: 'scaleX(0)' }}
         />
 
+        {/* Timeline strip captions */}
+        <div
+          className="pointer-events-none absolute inset-x-0 z-20 flex items-end justify-between px-4 pb-1.5 font-mono text-[10px] tracking-wide md:px-6 md:text-xs"
+          style={{ bottom: stripTop }}
+        >
+          <span className="text-white/60">
+            <span ref={leftAxisRef}>300k BCE</span>
+            <span className="text-white/35"> · you are here</span>
+          </span>
+          <span className="hidden text-white/35 md:inline">
+            linear timeline · every year drawn the same width
+          </span>
+          <span className="text-white/60">NOW · 2025</span>
+        </div>
         {/* Opening thesis annotation — only visible while fully zoomed out */}
         <div
           ref={annotationRef}
-          className="pointer-events-none absolute inset-0 z-[15] will-change-[opacity]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] will-change-[opacity]"
+          style={{ height: stripTop }}
         >
-          <div className="absolute left-1/2 top-[32%] w-[min(90%,780px)] -translate-x-1/2 text-center">
-            <div className="text-lg font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-2xl">
-              ≈ 300,000 years of essentially <span className="text-[#FF6B6B]">one diet</span>
-            </div>
-            <div className="mx-auto mt-3 h-px w-[80%] bg-gradient-to-r from-transparent via-white/40 to-white/60" />
+          <div className="absolute left-1/2 top-1/2 w-[92%] -translate-x-1/2 -translate-y-1/2 text-center text-xs font-semibold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] md:text-base">
+            ≈ 300,000 years of essentially one diet
           </div>
-          <div className="absolute right-4 top-[46%] text-right md:right-8">
-            <div className="ml-auto mb-1 h-8 w-px bg-gradient-to-t from-[#FF5DA2] to-transparent md:h-12" />
-            <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#FF5DA2] drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] md:text-sm">
-              all the change
-              <br />
-              is in here →
-            </div>
+          <div className="absolute bottom-1 right-3 text-right text-[10px] font-bold uppercase tracking-[0.15em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] md:right-5 md:text-xs">
+            all the change is in here →
           </div>
         </div>
 
-        {/* Live HUD — sits below the nav + top legend */}
-        <div className="absolute left-5 top-[6.25rem] z-20 md:left-10 md:top-28">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/45">
-            Oldest on screen
+        {/* Live HUD — sits below the nav + top legend (hidden during intro) */}
+        <div
+          className={`absolute left-4 right-4 top-[5.75rem] z-20 transition-opacity duration-500 md:left-10 md:right-auto md:top-28 ${
+            phase === 'intro' ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45 md:text-[11px]">
+            You are in
           </div>
-          <div className="mt-1">
+          <div className="mt-0.5 flex items-baseline gap-3">
             <span
               ref={yearRef}
               className="font-mono text-2xl font-bold tabular-nums text-white md:text-4xl"
             >
               300k BCE
             </span>
-          </div>
-          <div className="mt-2 text-[11px] font-medium uppercase tracking-[0.14em] text-white/45">
-            <span ref={metaRef} className="font-mono">
-              302,025 yrs on screen · 0% ultra-processed
+            <span
+              ref={paceRef}
+              className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45 md:text-[11px]"
+            >
+              {paceLabel(0)}
             </span>
           </div>
+          <dl className="mt-3 grid grid-cols-3 gap-x-4 gap-y-2 md:w-[420px] md:gap-x-6 md:gap-y-3">
+            {STATS.map((s) => (
+              <div key={s.key}>
+                <dt className="text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-white/45 md:text-[10px]">
+                  {s.label}
+                </dt>
+                <dd className="mt-0.5 font-mono text-sm font-bold tabular-nums text-white md:text-lg">
+                  <span
+                    ref={(el) => {
+                      statRefs.current[s.key] = el;
+                    }}
+                  >
+                    {initialStats[s.key]}
+                  </span>
+                </dd>
+                <div className="hidden text-[10px] text-white/35 md:block">{s.hint}</div>
+              </div>
+            ))}
+          </dl>
         </div>
 
         {/* Intro hero */}
         <div
           ref={introRef}
-          className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center px-6 text-center will-change-[opacity,transform]"
+          className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#05050a]/55 px-6 text-center will-change-[opacity,transform]"
         >
           <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.4em] text-white/50">
             Human Diet
@@ -212,19 +302,25 @@ const Journey = () => {
               of eating
             </span>
           </h1>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/60 md:text-lg">
+          <p className="mt-6 max-w-md text-base leading-relaxed text-white/70 md:text-lg">
             For nearly all of human history, we ate the same way. Then, in the
-            final sliver of the timeline, everything changed. Scroll to zoom in.
+            final sliver of the timeline, everything changed. Scroll to walk it.
+          </p>
+          <p className="mt-4 max-w-md text-xs leading-relaxed text-white/50 md:text-sm">
+            The strip below is strictly linear — every year is drawn the same
+            width, nothing stretched. The walk above it is a time-lapse that
+            slows as it nears today.
           </p>
         </div>
 
         {/* Scroll hint */}
         <div
           ref={hintRef}
-          className="pointer-events-none absolute bottom-7 left-1/2 z-30 -translate-x-1/2 text-center will-change-[opacity]"
+          className="pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 text-center will-change-[opacity]"
+          style={{ bottom: `calc(${stripTop} + 2rem)` }}
         >
           <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-white/50">
-            Scroll to zoom in
+            Scroll to walk
           </div>
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -235,15 +331,18 @@ const Journey = () => {
 
         {/* Active chapter card (single keyed node — never stalls or stacks) */}
         {phase === 'reveal' && active && (
-          <div className="absolute bottom-24 left-1/2 z-20 w-[min(92%,540px)] -translate-x-1/2 px-1 md:bottom-auto md:left-10 md:top-1/2 md:w-[420px] md:translate-x-0 md:-translate-y-1/2">
+          <div
+            className="absolute left-1/2 z-20 w-[min(94%,540px)] -translate-x-1/2 px-1 md:bottom-auto md:left-10 md:top-[calc(50%+4.25rem)] md:w-[420px] md:translate-x-0 md:-translate-y-1/2"
+            style={{ bottom: `calc(${stripTop} + 1.75rem)` }}
+          >
             <motion.div
               key={activeIndex}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="rounded-2xl border border-white/10 bg-black/45 p-6 shadow-2xl backdrop-blur-xl md:p-8">
-                <div className="mb-2 flex items-center gap-2">
+              <div className="rounded-2xl border border-white/10 bg-black/55 p-4 shadow-2xl backdrop-blur-xl md:p-6">
+                <div className="mb-1.5 flex items-center gap-2">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#FFD93D]">
                     {active.kicker}
                   </span>
@@ -251,24 +350,30 @@ const Journey = () => {
                     · {formatYear(active.year)}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold leading-tight text-white md:text-2xl">
+                <h2 className="text-lg font-bold leading-tight text-white md:text-2xl">
                   {active.title}
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/75 md:text-[15px]">
+                <p className="mt-2 hidden text-sm leading-relaxed text-white/75 md:block md:text-[15px]">
                   {active.body}
                 </p>
+                <dl className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-[13px] leading-snug md:text-sm">
+                  <div className="flex gap-2">
+                    <dt className="w-[4.5rem] shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FF6B6B] md:pt-0.5">
+                      Eating
+                    </dt>
+                    <dd className="text-white/80">{active.eating}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="w-[4.5rem] shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFD93D] md:pt-0.5">
+                      Prepared
+                    </dt>
+                    <dd className="text-white/80">{active.prepared}</dd>
+                  </div>
+                </dl>
               </div>
             </motion.div>
           </div>
         )}
-
-        {/* Axis labels at the graph's lower corners */}
-        <div className="pointer-events-none absolute bottom-[4.5rem] left-4 z-20 font-mono text-[10px] tracking-wide text-white/45 md:bottom-20 md:left-6 md:text-xs">
-          <span ref={leftAxisRef}>300k BCE</span>
-        </div>
-        <div className="pointer-events-none absolute bottom-[4.5rem] right-4 z-20 text-right font-mono text-[10px] tracking-wide text-white/60 md:bottom-20 md:right-6 md:text-xs">
-          NOW · 2025
-        </div>
 
         {/* Legend — pinned to the top under the nav. One swipeable row on
             mobile; wrapped and centered on desktop. (hidden during intro) */}
@@ -302,8 +407,8 @@ const Journey = () => {
             <span className="text-[#FF5DA2]">happened in the last sliver.</span>
           </h2>
           <p className="mt-5 max-w-md text-base leading-relaxed text-white/60">
-            Seed oils and ultra-processed foods went from 0% to nearly half our
-            diet — in roughly the last 0.07% of human history.
+            Seed oils and ultra-processed foods went from 0% to more than half
+            our diet — in roughly the last 0.07% of human history.
           </p>
         </div>
       </div>

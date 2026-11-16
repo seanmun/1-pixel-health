@@ -48,8 +48,41 @@ export const formatYear = (year: number): string => {
   if (y <= -10000) return `${Math.round(Math.abs(y) / 1000)}k BCE`;
   if (y < 0) return `${Math.abs(y).toLocaleString()} BCE`;
   if (y === 0) return '1 CE';
-  return `${y.toLocaleString()} CE`;
+  return `${y} CE`;
 };
 
 /** Compact "years on screen" count, e.g. 302,025 or 150. */
 export const formatSpan = (years: number): string => Math.round(years).toLocaleString();
+
+// ---------------------------------------------------------------------------
+// Journey progress <-> year.
+//
+// The walking world can't give every year equal width (the walkers would spend
+// 99.9% of the journey in an unchanging landscape), so the walk is an honest
+// TIME-LAPSE: progress p in [0,1] maps to the oldest year of the camera window
+// while it zooms, then sweeps linearly across the final MIN_SPAN years. The
+// linear streamgraph strip stays on screen as the equal-years reference, and
+// the HUD states how many years each step covers.
+// ---------------------------------------------------------------------------
+
+/** Portion of the journey spent zooming; the rest sweeps the modern window. */
+export const ZOOM_PORTION = 0.78;
+
+const MODERN_START = YEAR_MAX - MIN_SPAN;
+const LOG_RATIO = Math.log(MIN_SPAN / FULL_SPAN);
+
+/** The year the walkers are in at journey progress p (clamped to [0,1]). */
+export const yearAtProgress = (p: number): number => {
+  const t = clamp01(p);
+  if (t < ZOOM_PORTION) return YEAR_MAX - spanForZoom(t / ZOOM_PORTION);
+  return MODERN_START + MIN_SPAN * ((t - ZOOM_PORTION) / (1 - ZOOM_PORTION));
+};
+
+/** Inverse of yearAtProgress. */
+export const progressAtYear = (year: number): number => {
+  const y = Math.max(YEAR_MIN, Math.min(YEAR_MAX, year));
+  if (y <= MODERN_START) {
+    return ZOOM_PORTION * (Math.log((YEAR_MAX - y) / FULL_SPAN) / LOG_RATIO);
+  }
+  return ZOOM_PORTION + (1 - ZOOM_PORTION) * ((y - MODERN_START) / MIN_SPAN);
+};
