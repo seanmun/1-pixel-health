@@ -12,19 +12,21 @@ const DELIVERY = [
 ];
 
 const STATUS_LABEL = {
+  done: { text: 'Finished model', cls: 'border-[#4ECB71]/50 text-[#4ECB71]' },
   placeholder: { text: 'Low-poly placeholder', cls: 'border-[#FFD93D]/40 text-[#FFD93D]' },
   wishlist: { text: 'Not in scene yet', cls: 'border-white/20 text-white/50' },
 } as const;
 
 const Objects = () => {
-  const inScene = WORLD_OBJECTS.filter((o) => o.status === 'placeholder').length;
+  const count = (status: string) => WORLD_OBJECTS.filter((o) => o.status === status).length;
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
       <h1 className="text-3xl font-extrabold md:text-4xl">Objects</h1>
       <p className="mt-2 max-w-2xl text-white/50">
-        Every model the walking world needs. {inScene} are in the scene today
-        as low-poly placeholders; {WORLD_OBJECTS.length - inScene} more are
-        suggested additions. Each is replaced as its finished model arrives.
+        Every model the walking world needs. {count('done')} finished,{' '}
+        {count('placeholder')} still low-poly placeholders, and {count('wishlist')}{' '}
+        suggested additions. Each placeholder is replaced as its finished model
+        arrives.
       </p>
 
       <section className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-7">

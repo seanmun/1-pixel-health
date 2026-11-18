@@ -84,6 +84,7 @@ export const createKit = () => {
     mesh.position.set(pos[0], pos[1], pos[2]);
     mesh.scale.set(s[0], s[1], s[2]);
     if (r) mesh.rotation.set(r[0], r[1], r[2]);
+    mesh.castShadow = true;
     parent.add(mesh);
     return mesh;
   };

@@ -2,6 +2,7 @@ import { Group, Mesh, Object3D, Vector3 } from 'three';
 import { Kit, mulberry32 } from './kit';
 import { progressAtYear, yearAtProgress } from '../../../utils/timeScale';
 import { iceAt } from '../../../data/vitals';
+import { ModelId } from './models';
 
 /** Length of the whole walk in world units (metres, roughly). */
 export const WORLD_LEN = 1000;
@@ -27,6 +28,8 @@ export interface Scenery {
   emitters: Emitter[];
   flames: Mesh[];
   spinners: { obj: Object3D; speed: number; x: number }[];
+  /** Placeholders that a finished model replaces once it has loaded. */
+  slots: { id: ModelId; obj: Group }[];
 }
 
 const SEED_OIL = '#8B3DE4';
@@ -47,12 +50,13 @@ export const buildScenery = (kit: Kit): Scenery => {
   const flames: Mesh[] = [];
   const spinners: Scenery['spinners'] = [];
   const markers: { obj: Object3D; kind: EmitterKind }[] = [];
+  const slots: Scenery['slots'] = [];
 
   const place = (
     x: number,
     z: number,
     build: (g: Group) => void,
-    opts: { rotY?: number; reach?: number; scale?: number } = {}
+    opts: { rotY?: number; reach?: number; scale?: number; model?: ModelId } = {}
   ) => {
     const g = new Group();
     build(g);
@@ -61,6 +65,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     if (opts.scale) g.scale.setScalar(opts.scale);
     group.add(g);
     items.push({ x, reach: opts.reach ?? 6, obj: g });
+    if (opts.model) slots.push({ id: opts.model, obj: g });
     return g;
   };
   const emit = (g: Group, kind: EmitterKind, x: number, y: number, z: number) => {
@@ -406,8 +411,9 @@ export const buildScenery = (kit: Kit): Scenery => {
   // ---- Hunter-gatherer camps ----------------------------------------------
   const camp = (x: number, o: { fire: boolean; fur: boolean; spears?: boolean }) => {
     reserve(x - 7, x + 7);
-    place(x - 4, NEAR - 2.5, (g) => hideTent(g, o.fur));
-    place(x + 4, NEAR - 3.5, (g) => hideTent(g, o.fur), { rotY: -0.4 });
+    // The fur (ice-age) variant has no finished model yet, so both use the hide tent.
+    place(x - 4, NEAR - 2.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: 0.25 });
+    place(x + 4, NEAR - 3.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: -0.4 });
     place(x - 1, NEAR + 2.2, dryingRack);
     if (o.spears) place(x + 2.6, NEAR + 1.6, spearRack);
     if (o.fire) place(x + 1.2, NEAR + 0.3, (g) => campfire(g, true));
@@ -421,9 +427,9 @@ export const buildScenery = (kit: Kit): Scenery => {
     const x = xAtYear(-20000);
     camp(x, { fire: true, fur: true, spears: true });
     reserve(x + 7, x + 22);
-    place(x + 11, NEAR - 1, mammoth);
-    place(x + 16, NEAR - 5, mammoth, { scale: 1.15 });
-    place(x + 19.5, NEAR + 0.5, mammoth, { scale: 0.7 });
+    place(x + 11, NEAR - 1, mammoth, { model: 'mammoth' });
+    place(x + 16, NEAR - 5, mammoth, { scale: 1.15, model: 'mammoth' });
+    place(x + 19.5, NEAR + 0.5, mammoth, { scale: 0.7, model: 'mammoth' });
   }
 
   // ---- Farming begins ------------------------------------------------------
@@ -576,7 +582,7 @@ export const buildScenery = (kit: Kit): Scenery => {
         if (r < 0.28) place(jx, nearZ, tree);
         else if (r < 0.42) place(jx, nearZ, (g) => (ice < 0.5 ? grass(g) : rock(g, snowy)));
         else if (r < 0.48 && ice < 0.4) place(jx, nearZ, berryBush);
-        else if (r < 0.53) place(jx, nearZ - 3, ice > 0.5 ? mammoth : antelope, { rotY: rng() < 0.5 ? 0 : Math.PI });
+        else if (r < 0.53) place(jx, nearZ - 3, ice > 0.5 ? mammoth : antelope, { rotY: rng() < 0.5 ? 0 : Math.PI, model: ice > 0.5 ? 'mammoth' : undefined });
       }
       if (r2 < 0.5) place(jx, farZ, tree);
       else if (r2 < 0.58) place(jx, farZ, (g) => rock(g, snowy, rand(1.5, 3)));
@@ -612,5 +618,5 @@ export const buildScenery = (kit: Kit): Scenery => {
     seed: (i * 0.618) % 1,
   }));
 
-  return { group, items, emitters, flames, spinners };
+  return { group, items, emitters, flames, spinners, slots };
 };

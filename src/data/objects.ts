@@ -16,8 +16,8 @@ export type ObjectCategory =
   | 'machines'
   | 'energy';
 
-/** placeholder = in the scene now as a low-poly stand-in; wishlist = not in the scene yet. */
-export type ObjectStatus = 'placeholder' | 'wishlist';
+/** done = finished model in the scene; placeholder = low-poly stand-in; wishlist = not in the scene yet. */
+export type ObjectStatus = 'done' | 'placeholder' | 'wishlist';
 
 export interface WorldObject {
   id: string;
@@ -88,7 +88,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
 
   // ---- Animals ---------------------------------------------------------------
   { id: 'antelope', name: 'Antelope', category: 'animals', era: '300k BCE – 115,000 BCE', size: '1.3 long, 0.9 at shoulder', notes: 'African savanna game.', status: 'placeholder' },
-  { id: 'mammoth', name: 'Woolly mammoth', category: 'animals', era: 'Ice age (≈115,000 – 10,000 BCE)', size: '5.0 long, 3.0 at shoulder', notes: 'Shaggy coat, curved tusks, domed head. Appears alone and as a herd of three at the glacial maximum.', variants: ['Adult', 'Calf'], status: 'placeholder' },
+  { id: 'mammoth', name: 'Woolly mammoth', category: 'animals', era: 'Ice age (≈115,000 – 10,000 BCE)', size: '5.0 long, 3.0 at shoulder', notes: 'Shaggy coat, curved tusks, domed head. Appears alone and as a herd of three at the glacial maximum.', variants: ['Adult', 'Calf'], status: 'done' },
   { id: 'sheep', name: 'Sheep', category: 'animals', era: '8,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Early domesticate; woolly, dark face.', status: 'placeholder' },
   { id: 'cow', name: 'Cow', category: 'animals', era: '5,000 BCE – 1900', size: '2.2 long, 1.4 at shoulder', notes: 'Village and farm cattle.', variants: ['Pale', 'Brown'], status: 'placeholder' },
   { id: 'reindeer', name: 'Reindeer', category: 'animals', era: 'Ice age', size: '1.8 long, 1.1 at shoulder', notes: 'Principal ice-age game alongside mammoth.', status: 'wishlist' },
@@ -121,7 +121,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'olive-press', name: 'Olive / wine press', category: 'food', era: '1,000 BCE – 1500', size: '2.5 wide, 2.5 tall', notes: 'Traditional pressed oil — a contrast with the solvent-extracted seed oils later.', status: 'wishlist' },
 
   // ---- Shelter & towns ---------------------------------------------------------------
-  { id: 'hide-tent', name: 'Hide tent', category: 'shelter', era: '300k BCE – 10,000 BCE', size: '2.9 across, 2.4 tall', notes: 'Conical pole-and-hide shelter with a dark doorway.', variants: ['Hide', 'Fur (ice age)'], status: 'placeholder' },
+  { id: 'hide-tent', name: 'Hide tent', category: 'shelter', era: '300k BCE – 10,000 BCE', size: '2.9 across, 2.4 tall', notes: 'Conical pole-and-hide shelter with a dark doorway.', variants: ['Hide', 'Fur (ice age)'], status: 'done' },
   { id: 'mud-hut', name: 'Round mud hut', category: 'shelter', era: '10,000 BCE – 3,000 BCE', size: '2.6 across, 3.0 tall', notes: 'Wattle-and-daub wall, conical thatch roof.', status: 'placeholder' },
   { id: 'village-house', name: 'Village house', category: 'shelter', era: '5,000 BCE – 1800', size: '2.8 × 2.6 × 3.2', notes: 'Plastered walls, pitched roof.', variants: ['Thatch roof', 'Tile roof'], status: 'placeholder' },
   { id: 'granary', name: 'Granary', category: 'shelter', era: '5,000 BCE – 1000 BCE', size: '2.0 across, 3.7 tall', notes: 'Round raised grain store.', status: 'placeholder' },

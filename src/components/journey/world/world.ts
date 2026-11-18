@@ -12,6 +12,8 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
+  Object3D,
+  PCFSoftShadowMap,
   PerspectiveCamera,
   Points,
   PointsMaterial,
@@ -23,6 +25,7 @@ import {
 import { createKit } from './kit';
 import { createFigure } from './figure';
 import { buildScenery, ROAD_HALF, WORLD_LEN, yearAtX } from './scenery';
+import { disposeModels, loadModels, ModelId, snowUniform, swapIn } from './models';
 import { progressAtYear } from '../../../utils/timeScale';
 import { getDietData, getDietColor } from '../../../utils/dietUtils';
 import { iceAt } from '../../../data/vitals';
@@ -104,6 +107,8 @@ export interface World {
 export const createWorld = (canvas: HTMLCanvasElement): World => {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = PCFSoftShadowMap;
 
   const kit = createKit();
   const scene = new Scene();
@@ -117,8 +122,19 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   const camera = new PerspectiveCamera(40, 1, 0.5, 420);
   const hemi = new HemisphereLight('#c3d0ff', '#4a3f30', 1.15);
   const sun = new DirectionalLight('#ffdcb0', 1.9);
-  sun.position.set(-0.5, 1, 0.8);
-  scene.add(hemi, sun);
+  // The sun casts shadows inside a box that travels with the walkers.
+  const SUN_DIR = [-0.5, 1, 0.8] as const;
+  sun.castShadow = true;
+  sun.shadow.mapSize.setScalar(window.innerWidth < 700 ? 1024 : 2048);
+  sun.shadow.camera.left = -55;
+  sun.shadow.camera.right = 55;
+  sun.shadow.camera.top = 45;
+  sun.shadow.camera.bottom = -45;
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 220;
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.06;
+  scene.add(hemi, sun, sun.target);
 
   // ---- Ground + diet road ---------------------------------------------------
   const gPos = new Float32Array(COLS * VERTS_PER_COL * 3);
@@ -156,6 +172,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   const groundMat = new MeshLambertMaterial({ vertexColors: true });
   const ground = new Mesh(groundGeo, groundMat);
   ground.frustumCulled = false;
+  ground.receiveShadow = true;
   scene.add(ground);
 
   const tmpColor = new Color();
@@ -201,6 +218,19 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   // ---- Scenery ----------------------------------------------------------------
   const scenery = buildScenery(kit);
   scene.add(scenery.group);
+
+  // Finished models replace their low-poly placeholders as they arrive.
+  let models: Partial<Record<ModelId, Object3D>> = {};
+  let disposed = false;
+  loadModels().then((loaded) => {
+    if (disposed) return disposeModels(loaded);
+    models = loaded;
+    for (const slot of scenery.slots) {
+      const model = loaded[slot.id];
+      if (model) swapIn(slot.obj, model);
+    }
+    dirty = true;
+  });
 
   // ---- Walkers ------------------------------------------------------------------
   const family = [
@@ -324,6 +354,9 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     const haze = Math.max(0, Math.min(1, (year - 1850) / 150));
     starMat.opacity = 0.85 * (1 - haze * 0.85) * (1 - ice * 0.5);
     stars.position.copy(camera.position);
+    sun.target.position.set(wx + 12, 0, -14);
+    sun.position.set(wx + 12 + SUN_DIR[0] * 90, SUN_DIR[1] * 90, -14 + SUN_DIR[2] * 90);
+    snowUniform.value = Math.min(1, ice * 1.2);
 
     const col0 = Math.floor(wx) - COLS_BEHIND;
     if (col0 !== builtCol0) rebuildGround(col0);
@@ -438,6 +471,8 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
       dirty = true;
     },
     dispose: () => {
+      disposed = true;
+      disposeModels(models);
       cancelAnimationFrame(raf);
       ro.disconnect();
       family.forEach((f) => f.fig.dispose());
