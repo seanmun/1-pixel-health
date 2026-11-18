@@ -97,7 +97,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'ox-plough', name: 'Ox with plough', category: 'animals', era: '4,000 BCE – 1850', size: '4.0 long including plough', notes: 'Draft power before the tractor — the energy step between muscle and machine.', status: 'wishlist' },
 
   // ---- Plants & terrain --------------------------------------------------------
-  { id: 'acacia', name: 'Acacia tree', category: 'plants', era: '300k BCE – 30,000 BCE', size: '3–4 tall, 3–4.5 canopy', notes: 'Flat-topped savanna tree. 2–3 shape variants.', status: 'placeholder' },
+  { id: 'acacia', name: 'Acacia tree', category: 'plants', era: '300k BCE – 30,000 BCE', size: '3–4 tall, 3–4.5 canopy', notes: 'Flat-topped savanna tree. 2–3 shape variants.', status: 'done' },
   { id: 'pine', name: 'Pine / spruce', category: 'plants', era: 'Ice age', size: '4–5 tall', notes: 'Conifer for the cold periods.', variants: ['Bare', 'Snow-laden'], status: 'done' },
   { id: 'broadleaf-tree', name: 'Broadleaf tree', category: 'plants', era: '9,700 BCE – today', size: '4–5.5 tall', notes: 'Oak-like temperate tree. 2–3 shape variants.', status: 'placeholder' },
   { id: 'berry-bush', name: 'Berry bush', category: 'plants', era: '300k BCE – 30,000 BCE', size: '1.3 wide, 1.1 tall', notes: 'Visible red berries — gathered food.', status: 'done' },
