@@ -20,6 +20,14 @@ export const MODEL_IDS = [
   'campfire',
   'spit-roast',
   'drying-rack',
+  'mud-hut',
+  'clay-oven',
+  'ferment-jars',
+  'grain-sheaves',
+  'quern',
+  'sheep',
+  'goat',
+  'cow',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 

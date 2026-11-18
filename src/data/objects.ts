@@ -89,11 +89,11 @@ export const WORLD_OBJECTS: WorldObject[] = [
   // ---- Animals ---------------------------------------------------------------
   { id: 'antelope', name: 'Antelope', category: 'animals', era: '300k BCE – 115,000 BCE', size: '1.3 long, 0.9 at shoulder', notes: 'African savanna game.', status: 'done' },
   { id: 'mammoth', name: 'Woolly mammoth', category: 'animals', era: 'Ice age (≈115,000 – 10,000 BCE)', size: '5.0 long, 3.0 at shoulder', notes: 'Shaggy coat, curved tusks, domed head. Appears alone and as a herd of three at the glacial maximum.', variants: ['Adult', 'Calf'], status: 'done' },
-  { id: 'sheep', name: 'Sheep', category: 'animals', era: '8,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Early domesticate; woolly, dark face.', status: 'placeholder' },
-  { id: 'cow', name: 'Cow', category: 'animals', era: '5,000 BCE – 1900', size: '2.2 long, 1.4 at shoulder', notes: 'Village and farm cattle.', variants: ['Pale', 'Brown'], status: 'placeholder' },
+  { id: 'sheep', name: 'Sheep', category: 'animals', era: '8,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Early domesticate; woolly, dark face.', status: 'done' },
+  { id: 'cow', name: 'Cow', category: 'animals', era: '5,000 BCE – 1900', size: '2.2 long, 1.4 at shoulder', notes: 'Village and farm cattle.', variants: ['Pale', 'Brown'], status: 'done' },
   { id: 'reindeer', name: 'Reindeer', category: 'animals', era: 'Ice age', size: '1.8 long, 1.1 at shoulder', notes: 'Principal ice-age game alongside mammoth.', status: 'done' },
   { id: 'bison', name: 'Bison / aurochs', category: 'animals', era: '300k BCE – 5,000 BCE', size: '2.8 long, 1.8 at shoulder', notes: 'Large game for the earliest camps.', status: 'done' },
-  { id: 'goat', name: 'Goat', category: 'animals', era: '9,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Among the first domesticated animals.', status: 'wishlist' },
+  { id: 'goat', name: 'Goat', category: 'animals', era: '9,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Among the first domesticated animals.', status: 'done' },
   { id: 'ox-plough', name: 'Ox with plough', category: 'animals', era: '4,000 BCE – 1850', size: '4.0 long including plough', notes: 'Draft power before the tractor — the energy step between muscle and machine.', status: 'wishlist' },
 
   // ---- Plants & terrain --------------------------------------------------------
@@ -111,18 +111,18 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'spit-roast', name: 'Spit with roasting meat', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.2 wide, 1.3 tall', notes: 'Two forked posts, crossbar, haunch of meat. Sits over the campfire.', status: 'done' },
   { id: 'drying-rack', name: 'Meat & fish drying rack', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.5 wide, 1.8 tall', notes: 'Strips of meat and fish air-drying on a pole frame — the oldest preservation method.', status: 'done' },
   { id: 'spear-rack', name: 'Leaning spears', category: 'food', era: '300k BCE – 10,000 BCE', size: '0.8 wide, 2.2 tall', notes: 'Three spears stacked upright at camp.', status: 'placeholder' },
-  { id: 'clay-oven', name: 'Clay oven with bread', category: 'food', era: '10,000 BCE – 1500', size: '1.7 dome, table 1.3 wide', notes: 'Domed earthen oven, glowing mouth, a side table of flat loaves.', status: 'placeholder' },
-  { id: 'ferment-jars', name: 'Fermentation jars', category: 'food', era: '10,000 BCE – 1500', size: '0.5 – 0.9 tall', notes: 'Sealed clay jars: beer, wine, pickles.', variants: ['Small', 'Large'], status: 'placeholder' },
-  { id: 'grain-sheaves', name: 'Grain sheaves', category: 'food', era: '10,000 BCE – 1800', size: '0.5 wide, 1.0 tall', notes: 'Bundled cut wheat or barley.', status: 'placeholder' },
+  { id: 'clay-oven', name: 'Clay oven with bread', category: 'food', era: '10,000 BCE – 1500', size: '1.7 dome, table 1.3 wide', notes: 'Domed earthen oven, glowing mouth, a side table of flat loaves.', status: 'done' },
+  { id: 'ferment-jars', name: 'Fermentation jars', category: 'food', era: '10,000 BCE – 1500', size: '0.5 – 0.9 tall', notes: 'Sealed clay jars: beer, wine, pickles.', variants: ['Small', 'Large'], status: 'done' },
+  { id: 'grain-sheaves', name: 'Grain sheaves', category: 'food', era: '10,000 BCE – 1800', size: '0.5 wide, 1.0 tall', notes: 'Bundled cut wheat or barley.', status: 'done' },
   { id: 'market-stall', name: 'Market stall', category: 'food', era: '1,000 BCE – 1700', size: '2.4 wide, 1.6 deep, 1.8 tall', notes: 'Awning over a counter with cheese wheels and bread; amphorae of oil and wine beside it.', variants: ['Red awning', 'Blue awning', 'Ochre awning'], status: 'placeholder' },
   { id: 'tin-cans', name: 'Stacked tins', category: 'food', era: '1800 – 1930', size: 'Each tin 0.45 across, 0.5 tall', notes: 'Pyramid of plain early tin cans outside the cannery.', status: 'placeholder' },
-  { id: 'quern', name: 'Grinding stone (quern)', category: 'food', era: '12,000 BCE – 1000 BCE', size: '0.6 long', notes: 'Saddle quern with handstone — stone-ground flour.', status: 'wishlist' },
+  { id: 'quern', name: 'Grinding stone (quern)', category: 'food', era: '12,000 BCE – 1000 BCE', size: '0.6 long', notes: 'Saddle quern with handstone — stone-ground flour.', status: 'done' },
   { id: 'smokehouse', name: 'Smoking rack / smokehouse', category: 'food', era: 'Ice age – 1800', size: '2 × 2 × 2.5', notes: 'Smoked fish and meat.', status: 'wishlist' },
   { id: 'olive-press', name: 'Olive / wine press', category: 'food', era: '1,000 BCE – 1500', size: '2.5 wide, 2.5 tall', notes: 'Traditional pressed oil — a contrast with the solvent-extracted seed oils later.', status: 'wishlist' },
 
   // ---- Shelter & towns ---------------------------------------------------------------
   { id: 'hide-tent', name: 'Hide tent', category: 'shelter', era: '300k BCE – 10,000 BCE', size: '2.9 across, 2.4 tall', notes: 'Conical pole-and-hide shelter with a dark doorway.', variants: ['Hide', 'Fur (ice age)'], status: 'done' },
-  { id: 'mud-hut', name: 'Round mud hut', category: 'shelter', era: '10,000 BCE – 3,000 BCE', size: '2.6 across, 3.0 tall', notes: 'Wattle-and-daub wall, conical thatch roof.', status: 'placeholder' },
+  { id: 'mud-hut', name: 'Round mud hut', category: 'shelter', era: '10,000 BCE – 3,000 BCE', size: '2.6 across, 3.0 tall', notes: 'Wattle-and-daub wall, conical thatch roof.', status: 'done' },
   { id: 'village-house', name: 'Village house', category: 'shelter', era: '5,000 BCE – 1800', size: '2.8 × 2.6 × 3.2', notes: 'Plastered walls, pitched roof.', variants: ['Thatch roof', 'Tile roof'], status: 'placeholder' },
   { id: 'granary', name: 'Granary', category: 'shelter', era: '5,000 BCE – 1000 BCE', size: '2.0 across, 3.7 tall', notes: 'Round raised grain store.', status: 'placeholder' },
   { id: 'stone-hall', name: 'Columned stone hall', category: 'shelter', era: '3,000 BCE – 1500', size: '6.4 × 4.4 × 4.2', notes: 'Temple or civic building with a five-column front.', status: 'placeholder' },

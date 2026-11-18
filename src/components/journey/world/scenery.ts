@@ -161,6 +161,13 @@ export const buildScenery = (kit: Kit): Scenery => {
     quadruped(g, { len: 1.8, h: 0.9, w: 0.7, leg: 0.7, color: pick(['#e9e3d5', '#7a5236']), head: 0.5 });
   const sheep = (g: Group) =>
     quadruped(g, { len: 1, h: 0.6, w: 0.6, leg: 0.35, color: '#efefe6', head: 0.3, headColor: '#3a3a3a' });
+  const goat = (g: Group) => {
+    quadruped(g, { len: 1, h: 0.45, w: 0.4, leg: 0.45, color: '#a48a68', head: 0.28, headColor: '#5c4a38' });
+    for (const sz of [-0.08, 0.08]) P(g, G.cone, '#6b5a48', [0.55, 1.05, sz], [0.06, 0.3, 0.06], [0, 0, 0.5]);
+  };
+  const placeCow = (x: number, z: number) => place(x, z, cow, { model: 'cow', rotY: rng() * 6 });
+  const placeSheep = (x: number, z: number) => place(x, z, sheep, { model: 'sheep', rotY: rng() * 6 });
+  const placeGoat = (x: number, z: number) => place(x, z, goat, { model: 'goat', rotY: rng() * 6 });
 
   // ---- Food & how it was prepared ----------------------------------------
   // The fire is three props on one spot — hearth, flames, spit — so the hearth
@@ -199,14 +206,27 @@ export const buildScenery = (kit: Kit): Scenery => {
     }
   };
   /** Clay oven with loaves — early bread. */
+  // Like the campfire, the glow and smoke are a separate prop on the same
+  // spot so the oven itself can be swapped for the finished model.
   const oven = (g: Group) => {
-    P(g, G.ball, '#b5683f', [0, 0.45, 0], [1.7, 1.6, 1.7]);
-    P(g, G.box, '#2a1810', [0, 0.4, 0.78], [0.55, 0.5, 0.2]);
-    flames.push(P(g, G.box, glowMat('#ff8a2a'), [0, 0.32, 0.86], [0.38, 0.26, 0.06]));
-    P(g, G.box, '#7a5a3c', [1.7, 0.5, 0.2], [1.3, 0.1, 0.7]);
-    for (const sx of [1.2, 2.2]) P(g, G.box, '#5b4030', [sx, 0.25, 0.2], [0.1, 0.5, 0.6]);
-    for (let i = 0; i < 3; i++) P(g, G.ball, '#d9a55a', [1.3 + i * 0.4, 0.65, 0.2], [0.34, 0.22, 0.24]);
-    emit(g, 'smoke', 0, 1.4, 0);
+    P(g, G.ball, '#b5683f', [-0.45, 0.4, 0], [1.45, 1.5, 1.45]);
+    P(g, G.box, '#2a1810', [-0.45, 0.35, 0.66], [0.5, 0.45, 0.2]);
+    P(g, G.box, '#7a5a3c', [0.75, 0.45, 0.2], [0.85, 0.08, 0.6]);
+    for (const sx of [0.4, 1.1]) P(g, G.box, '#5b4030', [sx, 0.22, 0.2], [0.08, 0.45, 0.5]);
+    for (let i = 0; i < 3; i++) P(g, G.ball, '#d9a55a', [0.5 + i * 0.25, 0.55, 0.2], [0.26, 0.16, 0.2]);
+  };
+  const ovenFire = (g: Group) => {
+    flames.push(P(g, G.box, glowMat('#ff8a2a'), [-0.45, 0.3, 0.6], [0.3, 0.2, 0.06]));
+    emit(g, 'smoke', -0.45, 1.3, 0);
+  };
+  const placeOven = (x: number, z: number) => {
+    place(x, z, oven, { model: 'clay-oven' });
+    place(x, z, ovenFire);
+  };
+  /** Saddle quern with handstone — stone-ground flour. */
+  const quern = (g: Group) => {
+    P(g, G.rock, '#77736d', [0, 0.05, 0], [0.8, 0.12, 0.34]);
+    P(g, G.rock, '#8a857d', [0, 0.12, 0], [0.16, 0.1, 0.26]);
   };
   /** Sealed clay jars — fermentation: beer, wine, pickles. */
   const pots = (g: Group) => {
@@ -455,16 +475,18 @@ export const buildScenery = (kit: Kit): Scenery => {
   // ---- Farming begins ------------------------------------------------------
   const farmstead = (x: number, o: { huts: number; bake: boolean; herd: 'sheep' | 'cow' | null }) => {
     reserve(x - 10, x + 10);
-    for (let i = 0; i < o.huts; i++) place(x - 7 + i * 4.2, NEAR - 3 - (i % 2) * 2.5, mudHut);
+    for (let i = 0; i < o.huts; i++) place(x - 7 + i * 4.2, NEAR - 3 - (i % 2) * 2.5, mudHut, { model: 'mud-hut', rotY: rand(-0.5, 0.5) });
     place(x + 4.5, NEAR + 1.2, (g) => field(g, 5, 3.2, 5, '#d2b55a', 0.5));
     place(x + 4.5, NEAR - 3, (g) => field(g, 5, 3.2, 5, '#7da348', 0.35));
-    place(x - 3.5, NEAR + 2.4, sheaves);
+    place(x - 3.5, NEAR + 2.4, sheaves, { model: 'grain-sheaves', rotY: rng() * 6 });
+    place(x - 2.2, NEAR + 3.0, sheaves, { model: 'grain-sheaves', rotY: rng() * 6, scale: 0.85 });
+    place(x - 1.6, NEAR + 2.9, quern, { model: 'quern', rotY: rand(-0.5, 0.5) });
     if (o.bake) {
-      place(x - 0.5, NEAR + 1.4, oven);
-      place(x - 6, NEAR + 2.6, pots);
+      placeOven(x - 0.5, NEAR + 1.4);
+      place(x - 6, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
     }
     if (o.herd)
-      for (let i = 0; i < 3; i++) place(x + 8 + (i % 2) * 1.2, NEAR - 1 - i * 1.7, o.herd === 'sheep' ? sheep : cow, { rotY: rng() * 6 });
+      for (let i = 0; i < 3; i++) (o.herd === 'cow' ? placeCow : i === 1 ? placeGoat : placeSheep)(x + 8 + (i % 2) * 1.2, NEAR - 1 - i * 1.7);
   };
   farmstead(xAtYear(-10000) + 6, { huts: 2, bake: true, herd: null });
   farmstead(xAtYear(-8000) + 4, { huts: 3, bake: false, herd: 'sheep' });
@@ -479,10 +501,10 @@ export const buildScenery = (kit: Kit): Scenery => {
     else place(x + 8, NEAR - 5, granary);
     if (o.mill) place(x + 11.5, NEAR - 1.5, (g) => windmill(g, x + 11.5));
     if (o.market) place(x - 2, NEAR + 2.2, stall);
-    place(x + 3, NEAR + 1.6, oven);
-    place(x - 7, NEAR + 2.6, pots);
+    placeOven(x + 3, NEAR + 1.6);
+    place(x - 7, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
     place(x + 7.5, NEAR + 1.8, (g) => field(g, 6, 3, 5, '#d2b55a', 0.55));
-    for (let i = 0; i < 2; i++) place(x - 10.5 + i * 1.6, NEAR + 1.2 - i, cow, { rotY: rng() * 6 });
+    for (let i = 0; i < 2; i++) placeCow(x - 10.5 + i * 1.6, NEAR + 1.2 - i);
   };
   village(xAtYear(-5000) + 4, { houses: 4, hall: false, mill: false, market: false });
   village(xAtYear(-3000), { houses: 5, hall: true, mill: false, market: false });
@@ -495,8 +517,8 @@ export const buildScenery = (kit: Kit): Scenery => {
     place(x + 10, NEAR - 6, cityBlock);
     place(x - 9, NEAR + 2.2, stall);
     place(x - 3.5, NEAR + 2.2, stall);
-    place(x + 4, NEAR + 2.6, pots);
-    place(x + 9, NEAR + 1.8, oven);
+    place(x + 4, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
+    placeOven(x + 9, NEAR + 1.8);
   }
   village(xAtYear(1), { houses: 5, hall: true, mill: false, market: true });
   village(xAtYear(1000), { houses: 4, hall: false, mill: false, market: true });
@@ -508,7 +530,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     place(x - 4, NEAR - 4, (g) => house(g, 5, 3, 4, '#8c3b2e', '#3f3632'));
     place(x + 5, NEAR - 3, (g) => windmill(g, x + 5));
     place(x + 1.5, NEAR + 1.6, (g) => field(g, 7, 3.4, 6, '#6f9a3a', 0.9)); // maize
-    for (let i = 0; i < 3; i++) place(x - 7 + i * 1.5, NEAR + 1.5 + (i % 2), cow, { rotY: rng() * 6 });
+    for (let i = 0; i < 3; i++) placeCow(x - 7 + i * 1.5, NEAR + 1.5 + (i % 2));
   }
 
   // ---- Industry ------------------------------------------------------------
@@ -633,8 +655,11 @@ export const buildScenery = (kit: Kit): Scenery => {
       if (nearFree) {
         if (r < 0.22 * (1 - f * 0.6)) place(jx, nearZ, leafy);
         else if (r < 0.2 + f * 0.3) place(jx, nearZ, (g) => field(g, big ? 6 : rand(3, 5), big ? 5 : rand(2.4, 3.6), big ? 7 : 4, crop, 0.45));
-        else if (r < 0.26 + f * 0.3) place(jx, nearZ, f < 0.5 ? sheep : cow, { rotY: rng() * 6 });
-        else if (r < 0.3 + f * 0.32) place(jx, nearZ - 2, (g) => (f < 0.25 ? mudHut(g) : house(g, 2.6, 2, 2.4, '#c9b79a', '#8c5a44')));
+        else if (r < 0.26 + f * 0.3) (f >= 0.5 ? placeCow : rng() < 0.3 ? placeGoat : placeSheep)(jx, nearZ);
+        else if (r < 0.3 + f * 0.32) {
+          if (f < 0.25) place(jx, nearZ - 2, mudHut, { model: 'mud-hut', rotY: rand(-0.5, 0.5) });
+          else place(jx, nearZ - 2, (g) => house(g, 2.6, 2, 2.4, '#c9b79a', '#8c5a44'));
+        }
       }
       if (r2 < 0.45 * (1 - f * 0.6)) place(jx, farZ, leafy);
       else if (r2 < 0.3 + f * 0.45) place(jx, farZ, (g) => field(g, big ? 9 : rand(4, 7), big ? 9 : rand(3, 6), big ? 9 : 5, crop, 0.45));
