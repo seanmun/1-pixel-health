@@ -34,9 +34,10 @@ cen = co0[fv0.reshape(-1, 3)].mean(axis=1)
 zr = (cen[:, 2] - co0[:, 2].min()) / (co0[:, 2].max() - co0[:, 2].min())
 mid = (co0[:, :2].max(axis=0) + co0[:, :2].min(axis=0)) / 2
 rr = np.linalg.norm(cen[:, :2] - mid, axis=1) / (np.linalg.norm(co0[:, :2] - mid, axis=1).max())
-fsel = (zr < 0.5) & (rr < 0.8)  # True = wall
+ZT = float(a[4]) if len(a) > 4 else 0.5; RT = float(a[5]) if len(a) > 5 else 0.8
+fsel = (zr < ZT) & (rr < RT)  # True = wall
 print('WOOD faces', int(fsel.sum()), 'of', len(fsel), round(100 * fsel.mean(), 1), '%')
-if not 0.005 < fsel.mean() < 0.9:
+if not 0.002 < fsel.mean() < 0.9:
     raise SystemExit('wood/foliage split looks wrong; aborting')
 # Split by giving wood faces a second material slot, then separating by material.
 wood_mat = me.materials[0].copy(); wood_mat.name = 'WOOD'

@@ -267,6 +267,28 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.roof, roof, [0, h + 0.6, 0], [w * 1.12, 1.2, d * 1.12]);
     P(g, G.box, '#2a1f18', [0, 0.6, d / 2 + 0.01], [0.6, 1.2, 0.06]);
   };
+  const smokehouse = (g: Group) => house(g, 2.2, 1.6, 2, '#4a3f36', '#2f2a26');
+  /** Screw press for olive oil and wine. */
+  const olivePress = (g: Group) => {
+    for (const sx of [-1, 1]) P(g, G.box, '#5b4030', [sx, 1.25, 0], [0.3, 2.5, 0.3]);
+    P(g, G.box, '#5b4030', [0, 2, 0], [2.4, 0.3, 0.35]);
+    P(g, G.cyl, '#6b4a2e', [0, 1.4, 0], [0.14, 1.4, 0.14]);
+    P(g, G.cyl, '#b59a6a', [0, 0.55, 0], [0.9, 0.5, 0.9]);
+    P(g, G.cyl, '#77736d', [0, 0.15, 0], [1.5, 0.3, 1.5]);
+  };
+  /** One section of dry-stone field wall. */
+  const fence = (g: Group) => {
+    P(g, G.box, '#77736d', [0, 0.45, 0], [2.7, 0.9, 0.45]);
+  };
+  /** Ox drawing a scratch plough. */
+  const oxPlough = (g: Group) => {
+    const ox = new Group();
+    quadruped(ox, { len: 1.9, h: 0.9, w: 0.7, leg: 0.6, color: '#7a4a30', head: 0.5 });
+    ox.position.x = 0.8;
+    g.add(ox);
+    P(g, G.cyl, '#6b4a2e', [-0.9, 0.7, 0], [0.07, 2, 0.07], [0, 0, 1.25]);
+    P(g, G.cyl, '#6b4a2e', [-1.8, 0.6, 0], [0.08, 1.2, 0.08], [0, 0, -0.35]);
+  };
   const granary = (g: Group) => {
     P(g, G.cyl, '#c2a878', [0, 1.3, 0], [2, 2.6, 2]);
     P(g, G.cone, '#7a6238', [0, 3.1, 0], [2.5, 1.2, 2.5]);
@@ -494,17 +516,27 @@ export const buildScenery = (kit: Kit): Scenery => {
   const village = (x: number, o: { houses: number; hall: boolean; mill: boolean; market: boolean }) => {
     reserve(x - 13, x + 13);
     for (let i = 0; i < o.houses; i++)
-      place(x - 11 + i * 3.8, NEAR - 3.5 - (i % 2) * 3.5, (g) =>
-        house(g, 2.8, 2, 2.6, pick(['#c9b79a', '#b9a688', '#d6c8ae']), pick(['#8c5a44', '#7a6238']))
+      place(
+        x - 11 + i * 3.8,
+        NEAR - 3.5 - (i % 2) * 3.5,
+        (g) => house(g, 2.8, 2, 2.6, pick(['#c9b79a', '#b9a688', '#d6c8ae']), pick(['#8c5a44', '#7a6238'])),
+        { model: 'village-house', rotY: rand(-0.35, 0.35) }
       );
-    if (o.hall) place(x + 7, NEAR - 6, stoneHall);
-    else place(x + 8, NEAR - 5, granary);
+    if (o.hall) place(x + 7, NEAR - 6, stoneHall, { model: 'stone-hall' });
+    else place(x + 8, NEAR - 5, granary, { model: 'granary', rotY: rand(-0.4, 0.4) });
     if (o.mill) place(x + 11.5, NEAR - 1.5, (g) => windmill(g, x + 11.5));
-    if (o.market) place(x - 2, NEAR + 2.2, stall);
+    if (o.market) {
+      place(x - 2, NEAR + 2.2, stall, { model: 'market-stall' });
+      place(x - 4.6, NEAR + 2.4, olivePress, { model: 'olive-press' });
+    }
     placeOven(x + 3, NEAR + 1.6);
     place(x - 7, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
     place(x + 7.5, NEAR + 1.8, (g) => field(g, 6, 3, 5, '#d2b55a', 0.55));
-    for (let i = 0; i < 2; i++) placeCow(x - 10.5 + i * 1.6, NEAR + 1.2 - i);
+    for (let i = 0; i < 2; i++) placeCow(x - 9.6 + i * 1.6, NEAR + 1.2 - i);
+    place(x - 12, NEAR + 1.4, smokehouse, { model: 'smokehouse', rotY: 0.3 });
+    for (const dx of [6.15, 8.85]) place(x + dx, NEAR + 0.2, fence, { model: 'fence' });
+    // Draft oxen: from about 4,000 BCE.
+    if (x >= xAtYear(-4000)) place(x + 7.5, NEAR - 1.1, oxPlough, { model: 'ox-plough' });
   };
   village(xAtYear(-5000) + 4, { houses: 4, hall: false, mill: false, market: false });
   village(xAtYear(-3000), { houses: 5, hall: true, mill: false, market: false });
@@ -512,11 +544,12 @@ export const buildScenery = (kit: Kit): Scenery => {
   {
     const x = xAtYear(-1000) + 4;
     reserve(x - 14, x + 14);
-    place(x - 8, NEAR - 6, stoneHall);
-    place(x + 2, NEAR - 4, cityBlock);
-    place(x + 10, NEAR - 6, cityBlock);
-    place(x - 9, NEAR + 2.2, stall);
-    place(x - 3.5, NEAR + 2.2, stall);
+    place(x - 8, NEAR - 6, stoneHall, { model: 'stone-hall' });
+    place(x + 2, NEAR - 4, cityBlock, { model: 'city-block' });
+    place(x + 10, NEAR - 6, cityBlock, { model: 'city-block' });
+    place(x - 9, NEAR + 2.2, stall, { model: 'market-stall' });
+    place(x - 3.5, NEAR + 2.2, stall, { model: 'market-stall' });
+    place(x + 0.5, NEAR + 2.4, olivePress, { model: 'olive-press' });
     place(x + 4, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
     placeOven(x + 9, NEAR + 1.8);
   }
@@ -653,21 +686,21 @@ export const buildScenery = (kit: Kit): Scenery => {
       const big = x >= IND0;
       const crop = pick(['#d2b55a', '#7da348', '#c4a84f']);
       if (nearFree) {
-        if (r < 0.22 * (1 - f * 0.6)) place(jx, nearZ, leafy);
+        if (r < 0.22 * (1 - f * 0.6)) place(jx, nearZ, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
         else if (r < 0.2 + f * 0.3) place(jx, nearZ, (g) => field(g, big ? 6 : rand(3, 5), big ? 5 : rand(2.4, 3.6), big ? 7 : 4, crop, 0.45));
         else if (r < 0.26 + f * 0.3) (f >= 0.5 ? placeCow : rng() < 0.3 ? placeGoat : placeSheep)(jx, nearZ);
         else if (r < 0.3 + f * 0.32) {
           if (f < 0.25) place(jx, nearZ - 2, mudHut, { model: 'mud-hut', rotY: rand(-0.5, 0.5) });
-          else place(jx, nearZ - 2, (g) => house(g, 2.6, 2, 2.4, '#c9b79a', '#8c5a44'));
+          else place(jx, nearZ - 2, (g) => house(g, 2.6, 2, 2.4, '#c9b79a', '#8c5a44'), { model: 'village-house', rotY: rand(-0.35, 0.35) });
         }
       }
-      if (r2 < 0.45 * (1 - f * 0.6)) place(jx, farZ, leafy);
+      if (r2 < 0.45 * (1 - f * 0.6)) place(jx, farZ, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
       else if (r2 < 0.3 + f * 0.45) place(jx, farZ, (g) => field(g, big ? 9 : rand(4, 7), big ? 9 : rand(3, 6), big ? 9 : 5, crop, 0.45));
       if (r3 < 0.22) place(jx, frontZ, grass);
       else if (r3 < 0.22 + f * 0.25) place(jx, frontZ + 1.5, (g) => field(g, rand(3, 5), 2.6, 5, crop, 0.18));
     } else {
       // Monocrop era: almost nothing but crop, the odd farmhouse and tree.
-      if (nearFree && r < 0.03) place(jx, -17, leafy);
+      if (nearFree && r < 0.03) place(jx, -17, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
       if (r2 < 0.02) place(jx, rand(-58, -46), (g) => house(g, 5, 3, 4, '#8c3b2e', '#3f3632'));
     }
   }

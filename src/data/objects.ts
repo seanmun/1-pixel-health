@@ -94,12 +94,12 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'reindeer', name: 'Reindeer', category: 'animals', era: 'Ice age', size: '1.8 long, 1.1 at shoulder', notes: 'Principal ice-age game alongside mammoth.', status: 'done' },
   { id: 'bison', name: 'Bison / aurochs', category: 'animals', era: '300k BCE – 5,000 BCE', size: '2.8 long, 1.8 at shoulder', notes: 'Large game for the earliest camps.', status: 'done' },
   { id: 'goat', name: 'Goat', category: 'animals', era: '9,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Among the first domesticated animals.', status: 'done' },
-  { id: 'ox-plough', name: 'Ox with plough', category: 'animals', era: '4,000 BCE – 1850', size: '4.0 long including plough', notes: 'Draft power before the tractor — the energy step between muscle and machine.', status: 'wishlist' },
+  { id: 'ox-plough', name: 'Ox with plough', category: 'animals', era: '4,000 BCE – 1850', size: '4.0 long including plough', notes: 'Draft power before the tractor — the energy step between muscle and machine.', status: 'done' },
 
   // ---- Plants & terrain --------------------------------------------------------
   { id: 'acacia', name: 'Acacia tree', category: 'plants', era: '300k BCE – 30,000 BCE', size: '3–4 tall, 3–4.5 canopy', notes: 'Flat-topped savanna tree. 2–3 shape variants.', status: 'done' },
   { id: 'pine', name: 'Pine / spruce', category: 'plants', era: 'Ice age', size: '4–5 tall', notes: 'Conifer for the cold periods.', variants: ['Bare', 'Snow-laden'], status: 'done' },
-  { id: 'broadleaf-tree', name: 'Broadleaf tree', category: 'plants', era: '9,700 BCE – today', size: '4–5.5 tall', notes: 'Oak-like temperate tree. 2–3 shape variants.', status: 'placeholder' },
+  { id: 'broadleaf-tree', name: 'Broadleaf tree', category: 'plants', era: '9,700 BCE – today', size: '4–5.5 tall', notes: 'Oak-like temperate tree. 2–3 shape variants.', status: 'done' },
   { id: 'berry-bush', name: 'Berry bush', category: 'plants', era: '300k BCE – 30,000 BCE', size: '1.3 wide, 1.1 tall', notes: 'Visible red berries — gathered food.', status: 'done' },
   { id: 'grass-tuft', name: 'Grass tuft', category: 'plants', era: '300k BCE – 1900', size: '0.6 tall', notes: 'Very light; scattered in large numbers.', status: 'placeholder' },
   { id: 'rock', name: 'Rock / boulder', category: 'plants', era: 'Whole journey', size: '0.5 – 3 across', notes: '3 shape variants.', variants: ['Bare', 'Snow-capped'], status: 'done' },
@@ -114,19 +114,19 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'clay-oven', name: 'Clay oven with bread', category: 'food', era: '10,000 BCE – 1500', size: '1.7 dome, table 1.3 wide', notes: 'Domed earthen oven, glowing mouth, a side table of flat loaves.', status: 'done' },
   { id: 'ferment-jars', name: 'Fermentation jars', category: 'food', era: '10,000 BCE – 1500', size: '0.5 – 0.9 tall', notes: 'Sealed clay jars: beer, wine, pickles.', variants: ['Small', 'Large'], status: 'done' },
   { id: 'grain-sheaves', name: 'Grain sheaves', category: 'food', era: '10,000 BCE – 1800', size: '0.5 wide, 1.0 tall', notes: 'Bundled cut wheat or barley.', status: 'done' },
-  { id: 'market-stall', name: 'Market stall', category: 'food', era: '1,000 BCE – 1700', size: '2.4 wide, 1.6 deep, 1.8 tall', notes: 'Awning over a counter with cheese wheels and bread; amphorae of oil and wine beside it.', variants: ['Red awning', 'Blue awning', 'Ochre awning'], status: 'placeholder' },
+  { id: 'market-stall', name: 'Market stall', category: 'food', era: '1,000 BCE – 1700', size: '2.4 wide, 1.6 deep, 1.8 tall', notes: 'Awning over a counter with cheese wheels and bread; amphorae of oil and wine beside it.', variants: ['Red awning', 'Blue awning', 'Ochre awning'], status: 'done' },
   { id: 'tin-cans', name: 'Stacked tins', category: 'food', era: '1800 – 1930', size: 'Each tin 0.45 across, 0.5 tall', notes: 'Pyramid of plain early tin cans outside the cannery.', status: 'placeholder' },
   { id: 'quern', name: 'Grinding stone (quern)', category: 'food', era: '12,000 BCE – 1000 BCE', size: '0.6 long', notes: 'Saddle quern with handstone — stone-ground flour.', status: 'done' },
-  { id: 'smokehouse', name: 'Smoking rack / smokehouse', category: 'food', era: 'Ice age – 1800', size: '2 × 2 × 2.5', notes: 'Smoked fish and meat.', status: 'wishlist' },
-  { id: 'olive-press', name: 'Olive / wine press', category: 'food', era: '1,000 BCE – 1500', size: '2.5 wide, 2.5 tall', notes: 'Traditional pressed oil — a contrast with the solvent-extracted seed oils later.', status: 'wishlist' },
+  { id: 'smokehouse', name: 'Smoking rack / smokehouse', category: 'food', era: 'Ice age – 1800', size: '2 × 2 × 2.5', notes: 'Smoked fish and meat.', status: 'done' },
+  { id: 'olive-press', name: 'Olive / wine press', category: 'food', era: '1,000 BCE – 1500', size: '2.5 wide, 2.5 tall', notes: 'Traditional pressed oil — a contrast with the solvent-extracted seed oils later.', status: 'done' },
 
   // ---- Shelter & towns ---------------------------------------------------------------
   { id: 'hide-tent', name: 'Hide tent', category: 'shelter', era: '300k BCE – 10,000 BCE', size: '2.9 across, 2.4 tall', notes: 'Conical pole-and-hide shelter with a dark doorway.', variants: ['Hide', 'Fur (ice age)'], status: 'done' },
   { id: 'mud-hut', name: 'Round mud hut', category: 'shelter', era: '10,000 BCE – 3,000 BCE', size: '2.6 across, 3.0 tall', notes: 'Wattle-and-daub wall, conical thatch roof.', status: 'done' },
-  { id: 'village-house', name: 'Village house', category: 'shelter', era: '5,000 BCE – 1800', size: '2.8 × 2.6 × 3.2', notes: 'Plastered walls, pitched roof.', variants: ['Thatch roof', 'Tile roof'], status: 'placeholder' },
-  { id: 'granary', name: 'Granary', category: 'shelter', era: '5,000 BCE – 1000 BCE', size: '2.0 across, 3.7 tall', notes: 'Round raised grain store.', status: 'placeholder' },
-  { id: 'stone-hall', name: 'Columned stone hall', category: 'shelter', era: '3,000 BCE – 1500', size: '6.4 × 4.4 × 4.2', notes: 'Temple or civic building with a five-column front.', status: 'placeholder' },
-  { id: 'city-block', name: 'Stone town houses', category: 'shelter', era: '1,000 BCE – 500', size: 'Row of three, each 2.1 × 2.6 × 2–4', notes: 'Flat-roofed masonry houses.', status: 'placeholder' },
+  { id: 'village-house', name: 'Village house', category: 'shelter', era: '5,000 BCE – 1800', size: '2.8 × 2.6 × 3.2', notes: 'Plastered walls, pitched roof.', variants: ['Thatch roof', 'Tile roof'], status: 'done' },
+  { id: 'granary', name: 'Granary', category: 'shelter', era: '5,000 BCE – 1000 BCE', size: '2.0 across, 3.7 tall', notes: 'Round raised grain store.', status: 'done' },
+  { id: 'stone-hall', name: 'Columned stone hall', category: 'shelter', era: '3,000 BCE – 1500', size: '6.4 × 4.4 × 4.2', notes: 'Temple or civic building with a five-column front.', status: 'done' },
+  { id: 'city-block', name: 'Stone town houses', category: 'shelter', era: '1,000 BCE – 500', size: 'Row of three, each 2.1 × 2.6 × 2–4', notes: 'Flat-roofed masonry houses.', status: 'done' },
   { id: 'barn', name: 'Barn / farmhouse', category: 'shelter', era: '1650 – today', size: '5 × 4 × 4.2', notes: 'Red timber barn, dark roof.', status: 'placeholder' },
   { id: 'skyscraper', name: 'City tower', category: 'shelter', era: '1925 – today (far background)', size: '4–7 square, 6–36 tall', notes: 'Distant skyline; lit windows. 3–4 variants of increasing height.', status: 'placeholder' },
 
@@ -134,7 +134,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'field-plot', name: 'Hand-worked field plot', category: 'farms', era: '10,000 BCE – 1800', size: '3–7 long, 2.5–4 deep', notes: 'Small irregular plot with visible rows.', variants: ['Wheat (gold)', 'Greens / legumes'], status: 'placeholder' },
   { id: 'maize-field', name: 'Maize field', category: 'farms', era: '1650 – 1900', size: '7 × 3.4, plants 0.9–2 tall', notes: 'New World crop after the Columbian Exchange.', status: 'placeholder' },
   { id: 'monocrop-field', name: 'Monocrop field block', category: 'farms', era: '1900 – today', size: '24 long × 11–44 deep (tiles end to end)', notes: 'Perfectly uniform rows to the horizon. Must tile seamlessly along its length.', variants: ['Corn', 'Soy'], status: 'placeholder' },
-  { id: 'fence', name: 'Field fence / dry-stone wall', category: 'farms', era: '5,000 BCE – 1900', size: '3 long sections', notes: 'Separates the small plots; disappears in the monocrop era.', status: 'wishlist' },
+  { id: 'fence', name: 'Field fence / dry-stone wall', category: 'farms', era: '5,000 BCE – 1900', size: '3 long sections', notes: 'Separates the small plots; disappears in the monocrop era.', status: 'done' },
   { id: 'grain-silo', name: 'Grain silo / elevator', category: 'farms', era: '1900 – today', size: '6 across, 20 tall', notes: 'Industrial-scale grain storage.', status: 'wishlist' },
 
   // ---- Industry & retail ------------------------------------------------------------------

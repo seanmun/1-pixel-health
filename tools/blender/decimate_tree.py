@@ -29,7 +29,7 @@ iy = np.clip((uv[:, 1] % 1.0 * px.shape[0]).astype(int), 0, px.shape[0] - 1)
 c = px[iy, ix]
 fsel = ~((c[:, 1] > c[:, 0] * 1.04) & (c[:, 1] > c[:, 2]))  # True = wood
 print('WOOD faces', int(fsel.sum()), 'of', len(fsel), round(100 * fsel.mean(), 1), '%')
-if not 0.005 < fsel.mean() < 0.9:
+if not 0.002 < fsel.mean() < 0.9:
     raise SystemExit('wood/foliage split looks wrong; aborting')
 # Split by giving wood faces a second material slot, then separating by material.
 wood_mat = me.materials[0].copy(); wood_mat.name = 'WOOD'

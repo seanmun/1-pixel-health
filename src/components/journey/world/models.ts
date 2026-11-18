@@ -28,6 +28,16 @@ export const MODEL_IDS = [
   'sheep',
   'goat',
   'cow',
+  'broadleaf-tree',
+  'village-house',
+  'granary',
+  'stone-hall',
+  'city-block',
+  'market-stall',
+  'olive-press',
+  'ox-plough',
+  'smokehouse',
+  'fence',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 
