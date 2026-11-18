@@ -96,9 +96,12 @@ export const buildScenery = (kit: Kit): Scenery => {
       P(g, G.cone, color, [0, 1.7 + i * 1.0, 0], [w, 1.5, w]);
     }
   };
-  const rock = (g: Group, snowy: boolean, s = rand(0.5, 1.5)) => {
-    P(g, G.rock, snowy ? '#c9d3dc' : '#6d6a66', [0, 0.3 * s, 0], [s * 1.4, s * 0.8, s], [0, rng() * 3, 0]);
+  /** Unit-sized (1 m tall); `placeRock` sizes and turns it, so the finished model matches. */
+  const rock = (g: Group, snowy: boolean) => {
+    P(g, G.rock, snowy ? '#c9d3dc' : '#6d6a66', [0, 0.375, 0], [1.75, 1, 1.25]);
   };
+  const placeRock = (x: number, z: number, snowy: boolean, s = rand(0.5, 1.5)) =>
+    place(x, z, (g) => rock(g, snowy), { model: 'rock', scale: s * 0.8, rotY: rng() * 3 });
   const grass = (g: Group) => {
     for (let i = 0; i < 3; i++)
       P(g, G.cone, '#8a9a4e', [rand(-0.3, 0.3), 0.3, rand(-0.3, 0.3)], [0.16, 0.6, 0.16]);
@@ -146,28 +149,41 @@ export const buildScenery = (kit: Kit): Scenery => {
     quadruped(g, { len: 1.3, h: 0.5, w: 0.4, leg: 0.8, color: '#b08a5a', head: 0.35 });
     for (const sz of [-0.1, 0.1]) P(g, G.cone, '#3b2f25', [0.8, 1.75, sz], [0.06, 0.5, 0.06]);
   };
+  const reindeer = (g: Group) => {
+    quadruped(g, { len: 1.6, h: 0.6, w: 0.5, leg: 0.75, color: '#7d7468', head: 0.4, headColor: '#5c544b' });
+    for (const sz of [-0.15, 0.15]) P(g, G.cone, '#4a3a2c', [0.95, 1.7, sz], [0.08, 0.7, 0.08], [0, 0, 0.3]);
+  };
+  const bison = (g: Group) => {
+    quadruped(g, { len: 2.5, h: 1.0, w: 0.8, leg: 0.7, color: '#4a3324', head: 0.7 });
+    P(g, G.ball, '#3d2a1e', [0.7, 1.55, 0], [1.2, 0.8, 0.9]);
+  };
   const cow = (g: Group) =>
     quadruped(g, { len: 1.8, h: 0.9, w: 0.7, leg: 0.7, color: pick(['#e9e3d5', '#7a5236']), head: 0.5 });
   const sheep = (g: Group) =>
     quadruped(g, { len: 1, h: 0.6, w: 0.6, leg: 0.35, color: '#efefe6', head: 0.3, headColor: '#3a3a3a' });
 
   // ---- Food & how it was prepared ----------------------------------------
-  /** Open fire; with a spit of roasting meat when `spit`. */
-  const campfire = (g: Group, spit: boolean) => {
+  // The fire is three props on one spot — hearth, flames, spit — so the hearth
+  // and spit can be swapped for finished models without losing the flames.
+  /** Stone ring and logs. */
+  const campfire = (g: Group) => {
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
       P(g, G.rock, '#55524f', [Math.cos(a) * 0.65, 0.1, Math.sin(a) * 0.65], [0.35, 0.25, 0.35]);
     }
     P(g, G.cyl, '#4a3526', [0, 0.15, 0], [0.16, 1.1, 0.16], [0, 0, 1.4]);
     P(g, G.cyl, '#4a3526', [0, 0.15, 0], [0.16, 1.1, 0.16], [1.4, 0, 0]);
+  };
+  const fire = (g: Group) => {
     flames.push(P(g, G.cone, glowMat('#ff7a1f'), [0, 0.6, 0], [0.75, 1.2, 0.75]));
     flames.push(P(g, G.cone, glowMat('#ffd34d'), [0, 0.45, 0], [0.4, 0.75, 0.4]));
     emit(g, 'smoke', 0, 1.4, 0);
-    if (spit) {
-      for (const sx of [-1, 1]) P(g, G.cyl, '#5b4030', [sx, 0.65, 0], [0.08, 1.3, 0.08]);
-      P(g, G.cyl, '#5b4030', [0, 1.25, 0], [0.05, 2.2, 0.05], [0, 0, Math.PI / 2]);
-      P(g, G.cyl, '#8a3b2a', [0, 1.25, 0], [0.38, 0.95, 0.38], [0, 0, Math.PI / 2]);
-    }
+  };
+  /** Two forked posts and a crossbar with a haunch of meat; stands over the fire. */
+  const spitRoast = (g: Group) => {
+    for (const sx of [-1, 1]) P(g, G.cyl, '#5b4030', [sx, 0.65, 0], [0.08, 1.3, 0.08]);
+    P(g, G.cyl, '#5b4030', [0, 1.25, 0], [0.05, 2.2, 0.05], [0, 0, Math.PI / 2]);
+    P(g, G.cyl, '#8a3b2a', [0, 1.25, 0], [0.38, 0.95, 0.38], [0, 0, Math.PI / 2]);
   };
   /** Strips of meat and fish air-drying — the oldest preservation method. */
   const dryingRack = (g: Group) => {
@@ -414,9 +430,13 @@ export const buildScenery = (kit: Kit): Scenery => {
     // The fur (ice-age) variant has no finished model yet, so both use the hide tent.
     place(x - 4, NEAR - 2.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: 0.25 });
     place(x + 4, NEAR - 3.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: -0.4 });
-    place(x - 1, NEAR + 2.2, dryingRack);
+    place(x - 1, NEAR + 2.2, dryingRack, { model: 'drying-rack' });
     if (o.spears) place(x + 2.6, NEAR + 1.6, spearRack);
-    if (o.fire) place(x + 1.2, NEAR + 0.3, (g) => campfire(g, true));
+    if (o.fire) {
+      place(x + 1.2, NEAR + 0.3, campfire, { model: 'campfire' });
+      place(x + 1.2, NEAR + 0.3, fire);
+      place(x + 1.2, NEAR + 0.3, spitRoast, { model: 'spit-roast' });
+    }
   };
   camp(6, { fire: true, fur: false, spears: true }); // fire was already habitual by 300k BCE
   camp(xAtYear(-250000) + 3, { fire: true, fur: false, spears: true });
@@ -577,17 +597,34 @@ export const buildScenery = (kit: Kit): Scenery => {
     const r3 = rng();
 
     if (year < -9700) {
-      const tree = (g: Group) => (ice > 0.5 || (ice > 0.2 && rng() < 0.5) ? pine(g, snowy) : acacia(g));
+      // Pick the species up front so the placement knows which finished model to use.
+      const plantTree = (z: number) => {
+        const isPine = ice > 0.5 || (ice > 0.2 && rng() < 0.5);
+        if (isPine) place(jx, z, (g) => pine(g, snowy), { model: 'pine', rotY: rng() * Math.PI * 2, scale: rand(0.8, 1.15) });
+        else place(jx, z, acacia, { model: 'acacia', rotY: rng() * Math.PI * 2, scale: rand(0.75, 1.15) });
+      };
       if (nearFree) {
-        if (r < 0.28) place(jx, nearZ, tree);
-        else if (r < 0.42) place(jx, nearZ, (g) => (ice < 0.5 ? grass(g) : rock(g, snowy)));
-        else if (r < 0.48 && ice < 0.4) place(jx, nearZ, berryBush);
-        else if (r < 0.53) place(jx, nearZ - 3, ice > 0.5 ? mammoth : antelope, { rotY: rng() < 0.5 ? 0 : Math.PI, model: ice > 0.5 ? 'mammoth' : undefined });
+        if (r < 0.28) plantTree(nearZ);
+        else if (r < 0.42) {
+          if (ice < 0.5) place(jx, nearZ, grass);
+          else placeRock(jx, nearZ, snowy);
+        } else if (r < 0.48 && ice < 0.4) place(jx, nearZ, berryBush, { model: 'berry-bush', rotY: rng() * Math.PI * 2 });
+        else if (r < 0.53) {
+          // Cold-steppe game through the ice age, savanna game otherwise.
+          const [build, model]: [(g: Group) => void, ModelId] =
+            ice > 0.5
+              ? rng() < 0.55 ? [reindeer, 'reindeer'] : [mammoth, 'mammoth']
+              : rng() < 0.7 ? [antelope, 'antelope'] : [bison, 'bison'];
+          place(jx, nearZ - 3, build, { rotY: rng() < 0.5 ? 0 : Math.PI, model });
+        }
       }
-      if (r2 < 0.5) place(jx, farZ, tree);
-      else if (r2 < 0.58) place(jx, farZ, (g) => rock(g, snowy, rand(1.5, 3)));
+      if (r2 < 0.5) plantTree(farZ);
+      else if (r2 < 0.58) placeRock(jx, farZ, snowy, rand(1.5, 3));
       else if (r2 < 0.58 + ice * 0.08) place(jx, rand(-62, -44), glacier, { reach: 12 });
-      if (r3 < 0.3) place(jx, frontZ, (g) => (ice < 0.5 && rng() < 0.7 ? grass(g) : rock(g, snowy, rand(0.3, 0.7))));
+      if (r3 < 0.3) {
+        if (ice < 0.5 && rng() < 0.7) place(jx, frontZ, grass);
+        else placeRock(jx, frontZ, snowy, rand(0.3, 0.7));
+      }
     } else if (x < mono0) {
       // Farmland steadily replaces woodland; fields get larger after 1800.
       const f = Math.min(1, (x - FARM0) / (IND0 - FARM0));

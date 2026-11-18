@@ -87,29 +87,29 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'hat', name: 'Hat', category: 'carried', era: '1800 – 1940', size: '0.40 brim', notes: 'Dark felt hat, worn by the adults.', status: 'placeholder' },
 
   // ---- Animals ---------------------------------------------------------------
-  { id: 'antelope', name: 'Antelope', category: 'animals', era: '300k BCE – 115,000 BCE', size: '1.3 long, 0.9 at shoulder', notes: 'African savanna game.', status: 'placeholder' },
+  { id: 'antelope', name: 'Antelope', category: 'animals', era: '300k BCE – 115,000 BCE', size: '1.3 long, 0.9 at shoulder', notes: 'African savanna game.', status: 'done' },
   { id: 'mammoth', name: 'Woolly mammoth', category: 'animals', era: 'Ice age (≈115,000 – 10,000 BCE)', size: '5.0 long, 3.0 at shoulder', notes: 'Shaggy coat, curved tusks, domed head. Appears alone and as a herd of three at the glacial maximum.', variants: ['Adult', 'Calf'], status: 'done' },
   { id: 'sheep', name: 'Sheep', category: 'animals', era: '8,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Early domesticate; woolly, dark face.', status: 'placeholder' },
   { id: 'cow', name: 'Cow', category: 'animals', era: '5,000 BCE – 1900', size: '2.2 long, 1.4 at shoulder', notes: 'Village and farm cattle.', variants: ['Pale', 'Brown'], status: 'placeholder' },
-  { id: 'reindeer', name: 'Reindeer', category: 'animals', era: 'Ice age', size: '1.8 long, 1.1 at shoulder', notes: 'Principal ice-age game alongside mammoth.', status: 'wishlist' },
-  { id: 'bison', name: 'Bison / aurochs', category: 'animals', era: '300k BCE – 5,000 BCE', size: '2.8 long, 1.8 at shoulder', notes: 'Large game for the earliest camps.', status: 'wishlist' },
+  { id: 'reindeer', name: 'Reindeer', category: 'animals', era: 'Ice age', size: '1.8 long, 1.1 at shoulder', notes: 'Principal ice-age game alongside mammoth.', status: 'done' },
+  { id: 'bison', name: 'Bison / aurochs', category: 'animals', era: '300k BCE – 5,000 BCE', size: '2.8 long, 1.8 at shoulder', notes: 'Large game for the earliest camps.', status: 'done' },
   { id: 'goat', name: 'Goat', category: 'animals', era: '9,000 BCE – 1800', size: '1.0 long, 0.7 at shoulder', notes: 'Among the first domesticated animals.', status: 'wishlist' },
   { id: 'ox-plough', name: 'Ox with plough', category: 'animals', era: '4,000 BCE – 1850', size: '4.0 long including plough', notes: 'Draft power before the tractor — the energy step between muscle and machine.', status: 'wishlist' },
 
   // ---- Plants & terrain --------------------------------------------------------
   { id: 'acacia', name: 'Acacia tree', category: 'plants', era: '300k BCE – 30,000 BCE', size: '3–4 tall, 3–4.5 canopy', notes: 'Flat-topped savanna tree. 2–3 shape variants.', status: 'placeholder' },
-  { id: 'pine', name: 'Pine / spruce', category: 'plants', era: 'Ice age', size: '4–5 tall', notes: 'Conifer for the cold periods.', variants: ['Bare', 'Snow-laden'], status: 'placeholder' },
+  { id: 'pine', name: 'Pine / spruce', category: 'plants', era: 'Ice age', size: '4–5 tall', notes: 'Conifer for the cold periods.', variants: ['Bare', 'Snow-laden'], status: 'done' },
   { id: 'broadleaf-tree', name: 'Broadleaf tree', category: 'plants', era: '9,700 BCE – today', size: '4–5.5 tall', notes: 'Oak-like temperate tree. 2–3 shape variants.', status: 'placeholder' },
-  { id: 'berry-bush', name: 'Berry bush', category: 'plants', era: '300k BCE – 30,000 BCE', size: '1.3 wide, 1.1 tall', notes: 'Visible red berries — gathered food.', status: 'placeholder' },
+  { id: 'berry-bush', name: 'Berry bush', category: 'plants', era: '300k BCE – 30,000 BCE', size: '1.3 wide, 1.1 tall', notes: 'Visible red berries — gathered food.', status: 'done' },
   { id: 'grass-tuft', name: 'Grass tuft', category: 'plants', era: '300k BCE – 1900', size: '0.6 tall', notes: 'Very light; scattered in large numbers.', status: 'placeholder' },
-  { id: 'rock', name: 'Rock / boulder', category: 'plants', era: 'Whole journey', size: '0.5 – 3 across', notes: '3 shape variants.', variants: ['Bare', 'Snow-capped'], status: 'placeholder' },
+  { id: 'rock', name: 'Rock / boulder', category: 'plants', era: 'Whole journey', size: '0.5 – 3 across', notes: '3 shape variants.', variants: ['Bare', 'Snow-capped'], status: 'done' },
   { id: 'glacier', name: 'Glacier front', category: 'plants', era: 'Ice age', size: '10–16 wide, 5–8 tall', notes: 'Blue-white ice wall for the far background.', status: 'placeholder' },
   { id: 'mountain', name: 'Mountain', category: 'plants', era: 'Whole journey (backdrop)', size: '40–60 wide, 18–36 tall', notes: 'Distant backdrop only; low detail.', variants: ['Bare', 'Snow-capped'], status: 'placeholder' },
 
   // ---- Food & preparation --------------------------------------------------------
-  { id: 'campfire', name: 'Campfire', category: 'food', era: '300k BCE – 10,000 BCE', size: '1.3 across', notes: 'Stone ring and logs. Flame and smoke are added in-engine.', status: 'placeholder' },
-  { id: 'spit-roast', name: 'Spit with roasting meat', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.2 wide, 1.3 tall', notes: 'Two forked posts, crossbar, haunch of meat. Sits over the campfire.', status: 'placeholder' },
-  { id: 'drying-rack', name: 'Meat & fish drying rack', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.5 wide, 1.8 tall', notes: 'Strips of meat and fish air-drying on a pole frame — the oldest preservation method.', status: 'placeholder' },
+  { id: 'campfire', name: 'Campfire', category: 'food', era: '300k BCE – 10,000 BCE', size: '1.3 across', notes: 'Stone ring and logs. Flame and smoke are added in-engine.', status: 'done' },
+  { id: 'spit-roast', name: 'Spit with roasting meat', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.2 wide, 1.3 tall', notes: 'Two forked posts, crossbar, haunch of meat. Sits over the campfire.', status: 'done' },
+  { id: 'drying-rack', name: 'Meat & fish drying rack', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.5 wide, 1.8 tall', notes: 'Strips of meat and fish air-drying on a pole frame — the oldest preservation method.', status: 'done' },
   { id: 'spear-rack', name: 'Leaning spears', category: 'food', era: '300k BCE – 10,000 BCE', size: '0.8 wide, 2.2 tall', notes: 'Three spears stacked upright at camp.', status: 'placeholder' },
   { id: 'clay-oven', name: 'Clay oven with bread', category: 'food', era: '10,000 BCE – 1500', size: '1.7 dome, table 1.3 wide', notes: 'Domed earthen oven, glowing mouth, a side table of flat loaves.', status: 'placeholder' },
   { id: 'ferment-jars', name: 'Fermentation jars', category: 'food', era: '10,000 BCE – 1500', size: '0.5 – 0.9 tall', notes: 'Sealed clay jars: beer, wine, pickles.', variants: ['Small', 'Large'], status: 'placeholder' },

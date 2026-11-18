@@ -7,7 +7,20 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
  * ground at the centre of its footprint, facing +X. Until a model loads — or
  * if it is missing — the procedural low-poly placeholder stays in the scene.
  */
-export const MODEL_IDS = ['mammoth', 'hide-tent'] as const;
+export const MODEL_IDS = [
+  'mammoth',
+  'hide-tent',
+  'acacia',
+  'antelope',
+  'reindeer',
+  'bison',
+  'pine',
+  'berry-bush',
+  'rock',
+  'campfire',
+  'spit-roast',
+  'drying-rack',
+] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 
 /** Shared uniform: how much snow lies on upward-facing surfaces, 0..1. */
