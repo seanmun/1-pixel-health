@@ -2,7 +2,8 @@
 // Asset manifest for the walking world. Every model the scene needs, with the
 // size it should be built at. The procedural low-poly placeholders live in
 // src/components/journey/world/scenery.ts and figure.ts; a finished model for
-// an entry is delivered as public/models/<id>.glb and replaces its placeholder.
+// an entry is delivered as public/models/<id>.glb and replaces its placeholder
+// (the walkers as public/models/walkers/<who>-<outfit>.glb).
 
 export type ObjectCategory =
   | 'people'
@@ -55,9 +56,9 @@ export const WORLD_OBJECTS: WorldObject[] = [
     category: 'people',
     era: 'Whole journey',
     size: '1.75 tall (scaled 1.65–1.77 by era)',
-    notes: 'Rigged humanoid with a walk cycle. One body with a lean and a heavy shape (blend shape or two meshes) so weight can follow the data. Carries the era\'s tool in the right hand.',
+    notes: 'Rigged humanoid with a walk cycle. One rigged model per outfit (public/models/walkers/man-1…6.glb); weight follows the data by widening the waist in-engine. Carries the era\'s tool in the right hand.',
     variants: ['Hides (300k BCE)', 'Sewn furs (ice age)', 'Woven tunic & sandals (first farmers)', 'Dyed wool tunic & trousers (antiquity–1700s)', 'Dark coat & hat (1800–1940)', 'T-shirt, jeans, sneakers (1955–today)'],
-    status: 'placeholder',
+    status: 'done',
   },
   {
     id: 'walker-woman',
@@ -65,9 +66,9 @@ export const WORLD_OBJECTS: WorldObject[] = [
     category: 'people',
     era: 'Whole journey',
     size: '1.63 tall (scaled by era)',
-    notes: 'Same rig and walk cycle as the man; lean and heavy shapes.',
+    notes: 'Same rig and walk cycle as the man (walkers/woman-1…6.glb).',
     variants: ['Same six era outfits as the man'],
-    status: 'placeholder',
+    status: 'done',
   },
   {
     id: 'walker-child',
@@ -75,9 +76,9 @@ export const WORLD_OBJECTS: WorldObject[] = [
     category: 'people',
     era: 'Whole journey',
     size: '1.10 tall',
-    notes: 'About 7 years old. Same rig; lean and heavy shapes.',
+    notes: 'About 7 years old. Same rig (walkers/child-1…6.glb).',
     variants: ['Same six era outfits'],
-    status: 'placeholder',
+    status: 'done',
   },
 
   // ---- Carried & worn --------------------------------------------------------

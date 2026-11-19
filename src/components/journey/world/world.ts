@@ -25,7 +25,7 @@ import {
 import { createKit } from './kit';
 import { createFigure } from './figure';
 import { buildScenery, ROAD_HALF, WORLD_LEN, yearAtX } from './scenery';
-import { disposeModels, loadModels, ModelId, snowUniform, swapIn } from './models';
+import { disposeModels, loadModels, loadWalkers, ModelId, snowUniform, swapIn, WALKERS } from './models';
 import { progressAtYear } from '../../../utils/timeScale';
 import { getDietData, getDietColor } from '../../../utils/dietUtils';
 import { iceAt } from '../../../data/vitals';
@@ -242,6 +242,12 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     { fig: createFigure(kit, { scale: 0.62, hair: '#2a1d14', tint: 0.85, weightGain: 0.7, phase: 4.0, carries: false }), dx: -0.55, z: 1.55 },
   ];
   family.forEach((f) => scene.add(f.fig.root));
+  // The rigged walkers arrive one outfit at a time and replace the drawn figures.
+  loadWalkers((who, outfit, rig, walk) => {
+    if (disposed) return;
+    family[WALKERS.indexOf(who)].fig.setRig(outfit, rig, walk);
+    dirty = true;
+  });
 
   // ---- Stars (fade with industrial haze) -----------------------------------------
   const starPos = new Float32Array(STARS * 3);

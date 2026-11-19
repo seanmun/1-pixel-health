@@ -1,4 +1,17 @@
-import { CircleGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D } from 'three';
+import {
+  AnimationClip,
+  AnimationMixer,
+  Bone,
+  CircleGeometry,
+  Color,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  MeshLambertMaterial,
+  MeshStandardMaterial,
+  Object3D,
+  Vector3,
+} from 'three';
 import { Kit } from './kit';
 import { vitalsAt } from '../../../data/vitals';
 
@@ -31,6 +44,7 @@ const OUTFITS: Outfit[] = [
 // Each outfit fades in over this many years before its keyframe.
 const BLEND: Record<number, number> = { [-45000]: 25000, [-9000]: 1500, [-500]: 600, 1800: 60, 1955: 15 };
 
+const tmp = new Vector3();
 const cA = new Color();
 const cB = new Color();
 
@@ -129,6 +143,68 @@ export const createFigure = (kit: Kit, opts: FigureOptions) => {
   const items = { spear, hoe, cup };
   if (opts.carries) Object.values(items).forEach((g) => armR.hand.add(g));
 
+  // ---- Finished, rigged models: one per outfit, arriving one at a time ----------
+  interface Rig {
+    scene: Object3D;
+    mixer: AnimationMixer;
+    duration: number;
+    belly: Bone[];
+    chest?: Bone;
+    hand?: Bone;
+    headTop?: Bone;
+  }
+  const rigs: (Rig | undefined)[] = [];
+  const rigHolder = new Group();
+  rigHolder.rotation.y = Math.PI / 2; // models face +Z; the walk goes +X
+  root.add(rigHolder);
+  // Tools and hat for the rigged figure: kept upright, moved to the hand / head.
+  const carry = new Group();
+  const hatHolder = new Group();
+  root.add(carry, hatHolder);
+
+  const setRig = (outfit: number, scene: Object3D, walk: AnimationClip) => {
+    // Walk on the spot: drop any forward travel baked into the clip.
+    const clip = walk.clone();
+    for (const track of clip.tracks) {
+      if (!/hips\.position$/i.test(track.name)) continue;
+      for (let i = 0; i < track.values.length; i += 3) {
+        track.values[i] = track.values[0];
+        track.values[i + 2] = track.values[2];
+      }
+    }
+    const bone = (name: string) => scene.getObjectByName(name) as Bone | undefined;
+    scene.traverse((o) => {
+      o.frustumCulled = false;
+      // These textures carry colour only and read dark on the shaded side, so
+      // let them glow faintly with their own colour.
+      const m = (o as Mesh).material as MeshStandardMaterial | undefined;
+      if (m?.isMeshStandardMaterial && m.map) {
+        m.emissiveMap = m.map;
+        m.emissive.set('#ffffff');
+        m.emissiveIntensity = 0.3;
+      }
+    });
+    const mixer = new AnimationMixer(scene);
+    mixer.clipAction(clip).play();
+    scene.visible = false;
+    rigHolder.add(scene);
+    rigs[outfit] = {
+      scene,
+      mixer,
+      duration: clip.duration,
+      belly: [bone('Spine02'), bone('Spine01')].filter((b): b is Bone => !!b),
+      chest: bone('Spine'),
+      hand: bone('RightHand'),
+      headTop: bone('head_end'),
+    };
+    if (!carry.children.length) {
+      carry.add(spear, hoe, cup);
+      hatHolder.add(hat);
+      hat.position.set(0, 0, 0);
+      hat.visible = true;
+    }
+  };
+
   const outfitAt = (year: number) => {
     let i = 0;
     while (i < OUTFITS.length - 1 && OUTFITS[i + 1].year <= year) i++;
@@ -148,11 +224,59 @@ export const createFigure = (kit: Kit, opts: FigureOptions) => {
     m.color.copy(cA).multiplyScalar(tint);
   };
 
+  /** Pose the rigged model for this moment; false if none has loaded yet. */
+  const updateRig = (year: number, distance: number, s: number, girth: number) => {
+    const { cur, next, t } = outfitAt(year);
+    const late = t >= 0.5 && !!next;
+    let index = OUTFITS.indexOf(late ? next! : cur);
+    while (index > 0 && !rigs[index]) index--;
+    const rig = rigs[index] ?? rigs.find((r) => r);
+    if (!rig) return false;
+    body.visible = false;
+    for (const r of rigs) if (r) r.scene.visible = r === rig;
+
+    // The models are built at each walker's own height; only the era's height
+    // change and a little all-over thickening are applied here.
+    const h = v175(year);
+    const wide = 1 + (girth - 1) * 0.2;
+    rigHolder.scale.set(h * wide, h, h * wide);
+    const cycle = distance / (1.5 * s) + opts.phase / (Math.PI * 2);
+    rig.mixer.setTime((cycle - Math.floor(cycle)) * rig.duration);
+    // Weight gain gathers at the waist: widen the lower spine, and undo it at
+    // the chest so shoulders, arms and head keep their size.
+    const b = 1 + (girth - 1) * 0.55;
+    rig.belly.forEach((bone, i) => (i === 0 ? bone.scale.set(b, 1, b) : bone.scale.set(1, 1, 1)));
+    rig.chest?.scale.set(1 / b, 1, 1 / b);
+    shadow.scale.setScalar(0.9 * s * girth);
+
+    rigHolder.updateWorldMatrix(true, true);
+    const item = late ? next!.item : cur.item;
+    carry.visible = opts.carries && item !== 'none' && !!rig.hand;
+    if (rig.hand) {
+      root.worldToLocal(rig.hand.getWorldPosition(tmp));
+      carry.position.copy(tmp);
+      carry.scale.setScalar(h);
+    }
+    (Object.keys(items) as (keyof typeof items)[]).forEach((k) => {
+      items[k].visible = item === k;
+      items[k].rotation.z = k === 'cup' ? 0 : 0.12;
+    });
+    hatHolder.visible = (late ? next!.hat : cur.hat) && opts.scale > 0.8 && !!rig.headTop;
+    if (rig.headTop) {
+      root.worldToLocal(rig.headTop.getWorldPosition(tmp));
+      hatHolder.position.copy(tmp);
+      hatHolder.scale.setScalar(h * 0.82);
+    }
+    return true;
+  };
+  const v175 = (year: number) => vitalsAt(year).heightCm / 175;
+
   const update = (year: number, distance: number) => {
     const v = vitalsAt(year);
     const s = opts.scale * (v.heightCm / 175);
     // Girth: 1 at a lean BMI of 21, ~1.46 at today's 29.4.
     const girth = 1 + Math.max(0, v.bmi - 21) * 0.055 * opts.weightGain;
+    if (updateRig(year, distance, s, girth)) return;
     body.scale.setScalar(s);
     torso.scale.set(0.26 * Math.pow(girth, 1.4), 0.62, 0.42 * girth);
     const b = Math.max(0, girth - 0.98);
@@ -219,13 +343,24 @@ export const createFigure = (kit: Kit, opts: FigureOptions) => {
     fit(spear, models.spear, 0, -0.7);
     fit(hoe, models.hoe, 0, -0.5);
     fit(cup, models.cup, 0.06, -0.1);
-    fit(hat, models.hat, 0, -0.08);
+    fit(hat, models.hat, 0, -0.1);
   };
 
   const dispose = () => {
     [topMat, armMat, legMat, footMat, shadowMat].forEach((m) => m.dispose());
     shadowGeo.dispose();
+    for (const rig of rigs) {
+      rig?.mixer.stopAllAction();
+      rig?.scene.traverse((o) => {
+        const mesh = o as Mesh;
+        if (!mesh.isMesh) return;
+        mesh.geometry.dispose();
+        const m = mesh.material as MeshStandardMaterial;
+        m.map?.dispose();
+        m.dispose();
+      });
+    }
   };
 
-  return { root, update, equip, dispose };
+  return { root, update, equip, setRig, dispose };
 };

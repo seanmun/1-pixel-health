@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshStandardMaterial, Object3D } from 'three';
+import { AnimationClip, Group, Mesh, MeshStandardMaterial, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /**
@@ -93,7 +93,7 @@ const addSnow = (material: MeshStandardMaterial) => {
   material.customProgramCacheKey = () => 'snow';
 };
 
-const prepare = (root: Object3D) => {
+export const prepare = (root: Object3D) => {
   root.traverse((o) => {
     const mesh = o as Mesh;
     if (!mesh.isMesh) return;
@@ -131,6 +131,29 @@ export const loadModels = async (): Promise<Partial<Record<ModelId, Object3D>>> 
     })
   );
   return out;
+};
+
+/** The three walkers, each with one rigged, walking model per era outfit. */
+export const WALKERS = ['man', 'woman', 'child'] as const;
+export type WalkerId = (typeof WALKERS)[number];
+export const OUTFIT_COUNT = 6;
+
+/**
+ * Loads the rigged walkers (public/models/walkers/<who>-<outfit>.glb), handing
+ * each to `onLoad` as it arrives so the figures can dress one outfit at a time.
+ */
+export const loadWalkers = (onLoad: (who: WalkerId, outfit: number, rig: Object3D, walk: AnimationClip) => void) => {
+  const loader = new GLTFLoader();
+  for (const who of WALKERS)
+    for (let i = 0; i < OUTFIT_COUNT; i++)
+      loader
+        .loadAsync(`${import.meta.env.BASE_URL}models/walkers/${who}-${i + 1}.glb`)
+        .then((gltf) => {
+          if (gltf.animations[0]) onLoad(who, i, prepare(gltf.scene), gltf.animations[0]);
+        })
+        .catch(() => {
+          /* keep the drawn figure */
+        });
 };
 
 /** Swap a placeholder group's contents for a clone of the finished model. */
