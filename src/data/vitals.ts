@@ -1,5 +1,5 @@
 // src/data/vitals.ts
-// Body, lifespan, energy and climate curves that drive the walkers and the HUD.
+// Body, lifespan, infant mortality, energy and climate curves that drive the walkers and the HUD.
 //
 // Every series is keyed to sources listed in src/data/sources.ts (topics
 // "lifespan", "body", "energy", "climate"). Values before about 1800 are
@@ -63,6 +63,55 @@ const MEDIAN_AGE_AT_DEATH: Keys = [
   [2000, 80.3],
   [2022, 81.7],
   [2025, 81.7],
+];
+
+/**
+ * Infant mortality — deaths before the first birthday per 1,000 live births.
+ * Before 1500: the cross-cultural means of Volk & Atkinson 2013 (26.8% across
+ * 15 forager societies, 26.9% across 42 historical ones; 27% for England
+ * c. 1500). These are averages of scattered estimates, not a measured series,
+ * so the line is held flat.
+ * 1590–1812: England, legitimate births in 26 parishes (Wrigley et al. 1997,
+ * as tabulated by Galley 2023). The step down after 1500 is a change of source.
+ * 1850–1895: US white population, Haines's census-based estimates as printed
+ * in Historical Statistics of the United States. These are contested:
+ * McDevitt-Irwin & Irwin 2025 put the 1850–80 rate at 60–110.
+ * 1915 on: US, all races, CDC/NCHS (birth-registration states only to 1932).
+ */
+const INFANT_MORTALITY: Keys = [
+  [-300000, 268],
+  [-10000, 268],
+  [-3000, 269],
+  [1500, 270],
+  [1590, 171],
+  [1612, 165],
+  [1637, 153],
+  [1662, 167],
+  [1687, 185],
+  [1712, 191],
+  [1737, 191],
+  [1762, 163],
+  [1787, 157],
+  [1812, 136],
+  [1850, 217],
+  [1860, 181],
+  [1870, 176],
+  [1880, 215],
+  [1890, 151],
+  [1895, 111],
+  [1915, 99.9],
+  [1920, 85.8],
+  [1930, 64.6],
+  [1940, 47],
+  [1950, 29.2],
+  [1960, 26],
+  [1970, 20],
+  [1980, 12.6],
+  [1990, 9.2],
+  [2000, 6.9],
+  [2010, 6.1],
+  [2020, 5.4],
+  [2024, 5.5],
 ];
 
 /**
@@ -153,6 +202,8 @@ const ICE: Keys = [
 export interface Vitals {
   lifeExpectancy: number;
   medianAgeAtDeath: number;
+  /** Deaths before age 1 per 1,000 live births. */
+  infantMortality: number;
   heightCm: number;
   bmi: number;
   weightKg: number;
@@ -165,6 +216,7 @@ export const vitalsAt = (year: number): Vitals => {
   return {
     lifeExpectancy: interpolate(LIFE_EXPECTANCY, year),
     medianAgeAtDeath: interpolate(MEDIAN_AGE_AT_DEATH, year),
+    infantMortality: interpolate(INFANT_MORTALITY, year),
     heightCm,
     bmi,
     weightKg: bmi * (heightCm / 100) ** 2,

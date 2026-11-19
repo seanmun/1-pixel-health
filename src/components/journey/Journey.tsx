@@ -17,7 +17,7 @@ import {
   yearAtProgress,
   ZOOM_PORTION,
 } from '../../utils/timeScale';
-import { getDietData, getDietColor, formatCategory } from '../../utils/dietUtils';
+import { getDietColor, formatCategory } from '../../utils/dietUtils';
 import { DietComposition } from '../../types';
 
 const LEGEND: (keyof DietComposition)[] = [
@@ -62,20 +62,19 @@ const STATS = [
   { key: 'height', label: 'Height', hint: 'adult male' },
   { key: 'weight', label: 'Weight', hint: 'adult male' },
   { key: 'energy', label: 'Energy per person', hint: 'all sources, per year' },
-  { key: 'upf', label: 'Seed oils + ultra-processed', hint: 'share of diet' },
+  { key: 'infant', label: 'Infant deaths per 1,000', hint: 'before age 1' },
 ] as const;
 type StatKey = (typeof STATS)[number]['key'];
 
 const statValues = (year: number): Record<StatKey, string> => {
   const v = vitalsAt(year);
-  const comp = getDietData(year);
   return {
     life: `${Math.round(v.lifeExpectancy)} yrs`,
     median: `${Math.round(v.medianAgeAtDeath)} yrs`,
     height: `${Math.round(v.heightCm)} cm`,
     weight: `${Math.round(v.weightKg)} kg`,
     energy: `${(Math.round(v.energyKwh / 100) * 100).toLocaleString()} kWh`,
-    upf: `${Math.round(comp.seedOils + comp.processedModern)}%`,
+    infant: `${v.infantMortality < 10 ? v.infantMortality.toFixed(1) : Math.round(v.infantMortality)}`,
   };
 };
 
