@@ -138,15 +138,15 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'grain-silo', name: 'Grain silo / elevator', category: 'farms', era: '1900 – today', size: '6 across, 20 tall', notes: 'Industrial-scale grain storage.', status: 'done' },
 
   // ---- Industry & retail ------------------------------------------------------------------
-  { id: 'brick-factory', name: 'Brick factory / cannery', category: 'industry', era: '1800 – 1940', size: '8–11 × 5 × 4.5, chimneys 7.5–9 tall', notes: 'Sawtooth roof, lit windows, two brick chimneys. Smoke is added in-engine.', variants: ['8 m', '11 m'], status: 'done' },
+  { id: 'brick-factory', name: 'Brick factory / cannery', category: 'industry', era: '1800 – 1940', size: '10–14 × 6.5–8.6 × 4–5.5, chimneys 7.7–10.5 tall', notes: 'Sawtooth roof, lit windows, two brick chimneys. Smoke is added in-engine.', variants: ['8 m', '11 m'], status: 'done' },
   { id: 'seed-oil-refinery', name: 'Seed-oil refinery', category: 'industry', era: '1911 – today', size: 'Main hall 9 × 6 × 5.6; three tanks 3 across, 6.5 tall; stacks 10 and 12 tall', notes: 'Process hall, three storage tanks with a purple band, two striped stacks, roof vents, a pipe to a wastewater lagoon, purple oil drums out front. Vent vapour is added in-engine.', status: 'done' },
   { id: 'oil-drum', name: 'Oil drum', category: 'industry', era: '1911 – today', size: '0.7 across, 1.0 tall', notes: 'Purple (the site\'s seed-oil colour).', status: 'placeholder' },
-  { id: 'fast-food', name: 'Drive-through fast-food restaurant', category: 'industry', era: '1957 – today', size: '5 × 4 × 3.1, sign pole 6 tall', notes: 'Unbranded: red box, yellow roof slab, lit window, tall glowing roadside sign.', status: 'done' },
-  { id: 'supermarket', name: 'Supermarket with car park', category: 'industry', era: '1946 – today', size: '12 × 7 × 3.8, car park 13 × 5', notes: 'Unbranded: white box, blue fascia, glazed front.', status: 'done' },
+  { id: 'fast-food', name: 'Drive-through fast-food restaurant', category: 'industry', era: '1957 – today', size: '7.2 × 5.7 × 3.4, sign pole 6.5 tall', notes: 'Unbranded: red box, yellow roof slab, lit window, tall glowing roadside sign.', status: 'done' },
+  { id: 'supermarket', name: 'Supermarket with car park', category: 'industry', era: '1946 – today', size: '16 × 9.6 × 3.75, car park 16 × 6.5 (drawn in-engine)', notes: 'Unbranded: white box, blue fascia, glazed front.', status: 'done' },
   { id: 'car', name: 'Car', category: 'industry', era: '1946 – today', size: '4.2 × 1.8 × 1.4', notes: 'Generic sedan in five colours. 1950s and modern shapes.', variants: ['1950s', 'Modern'], status: 'done' },
 
   // ---- Machines ------------------------------------------------------------------------------
-  { id: 'tractor', name: 'Tractor', category: 'machines', era: '1915 – today', size: '3.5 × 2 × 2.6', notes: 'Red mid-century farm tractor.', variants: ['1920s', 'Modern'], status: 'done' },
+  { id: 'tractor', name: 'Tractor', category: 'machines', era: '1915 – today', size: '3.1 × 1.9 × 2.3', notes: 'Red mid-century farm tractor.', variants: ['1920s', 'Modern'], status: 'done' },
   { id: 'sprayer-rig', name: 'Boom sprayer', category: 'machines', era: '1950 – today', size: 'Boom 4.5–12 wide', notes: 'Yellow tank and folding spray boom towed behind the tractor. Spray mist is added in-engine.', status: 'placeholder' },
   { id: 'crop-duster', name: 'Crop duster', category: 'machines', era: '1945 – today', size: '8 wingspan, 6 long', notes: 'Yellow single-engine agricultural aircraft. Spray trail is added in-engine.', status: 'placeholder' },
   { id: 'combine', name: 'Combine harvester', category: 'machines', era: '1950 – today', size: '9 long, header 9 wide', notes: 'Scale cue for the giant fields.', status: 'done' },

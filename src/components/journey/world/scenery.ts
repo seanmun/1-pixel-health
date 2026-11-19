@@ -379,7 +379,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.box, color, [x, 0.45, z], [1.9, 0.5, 0.9]);
     P(g, G.box, '#1f2328', [x - 0.1, 0.85, z], [1, 0.4, 0.8]);
   };
-  const placeCar = (x: number, z: number) => place(x, z, (g) => car(g, 0, 0, pick(CAR_COLORS)), { model: 'car' });
+  const placeCar = (x: number, z: number, rotY = 0) => place(x, z, (g) => car(g, 0, 0, pick(CAR_COLORS)), { model: 'car', rotY });
   const CAR_COLORS = ['#c0392b', '#2c6fb3', '#e6e6e6', '#3a3d44', '#d9a520'];
   /** Drive-through fast food with a glowing roadside sign. */
   const fastFood = (g: Group) => {
@@ -389,13 +389,16 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.cyl, '#8a8f98', [3.8, 2.6, 2], [0.16, 5.2, 0.16]);
     P(g, G.box, glowMat('#ffc81f'), [3.8, 5.4, 2], [1.7, 1.3, 0.25]);
   };
-  /** Supermarket: aisles of shelf-stable packaged food, and a car park. */
+  /** Supermarket: aisles of shelf-stable packaged food. */
   const supermarket = (g: Group) => {
-    P(g, G.box, '#dfe3e8', [0, 1.9, 0], [12, 3.8, 7]);
-    P(g, G.box, '#2f6fd0', [0, 3.2, 3.52], [12, 0.9, 0.05]);
-    P(g, G.box, glowMat('#bfe3ff'), [0, 1.1, 3.52], [9, 1.6, 0.05]);
-    P(g, G.box, '#26272c', [0, 0.03, 6.3], [13, 0.06, 5]);
-    for (let i = 0; i < 5; i++) car(g, -5 + i * 2.5, 5.4 + (i % 2) * 1.8, pick(CAR_COLORS));
+    P(g, G.box, '#dfe3e8', [0, 1.9, 0], [16, 3.75, 9.6]);
+    P(g, G.box, '#2f6fd0', [0, 2.6, 4.82], [16, 0.8, 0.05]);
+    P(g, G.box, glowMat('#bfe3ff'), [0, 1.1, 4.82], [11, 1.6, 0.05]);
+  };
+  /** Its car park: asphalt and five painted bays. The cars are placed separately at full size. */
+  const carPark = (g: Group) => {
+    P(g, G.box, '#26272c', [0, 0.03, 0], [16, 0.06, 6.5]);
+    for (let i = 0; i < 6; i++) P(g, G.box, '#e9e9e4', [-7 + i * 2.8, 0.07, -0.6], [0.1, 0.02, 4.6]);
   };
   const skyscraper = (g: Group, h: number) => {
     const w = rand(4, 7);
@@ -585,9 +588,11 @@ export const buildScenery = (kit: Kit): Scenery => {
 
   // ---- Industry ------------------------------------------------------------
   const factoryAt = (x: number, w: number, cans: boolean) => {
-    reserve(x - w / 2 - 3, x + w / 2 + 3);
-    place(x, NEAR - 2.5, factory, { reach: 12, scale: w / 11, model: 'brick-factory' });
-    if (cans) place(x + w / 2 - 2.6, NEAR + 1.8, tinCans);
+    // Drawn a quarter larger than `w`, so its two storeys clear the walkers' heads.
+    const k = (w / 11) * 1.235;
+    reserve(x - 5.6 * k - 2, x + 5.6 * k + 2);
+    place(x, NEAR - 3.5, factory, { reach: 12, scale: k, model: 'brick-factory' });
+    if (cans) place(x + 5.6 * k - 2.6, NEAR + 1.6, tinCans);
   };
   factoryAt(xAtYear(1800) + 6, 8, true); // the first canneries
   factoryAt(xAtYear(1840), 9, false);
@@ -609,14 +614,20 @@ export const buildScenery = (kit: Kit): Scenery => {
   factoryAt(xAtYear(1930), 10, true);
   const shopAt = (year: number, kind: 'fastFood' | 'supermarket') => {
     const x = xAtYear(year);
-    const hw = kind === 'fastFood' ? 5.5 : 8.5;
+    const hw = kind === 'fastFood' ? 5.5 : 9;
     reserve(x - hw, x + hw);
     if (kind === 'fastFood') {
-      place(x, NEAR - 1.5, fastFood, { reach: 12, model: 'fast-food' });
+      place(x, NEAR - 2.3, fastFood, { reach: 12, model: 'fast-food' });
       // The drive-through queue.
-      placeCar(x - 2.6, NEAR + 2.3);
-      placeCar(x + 2.5, NEAR + 2.3);
-    } else place(x, NEAR - 3.7, supermarket, { reach: 12, model: 'supermarket' });
+      placeCar(x - 2.6, NEAR + 2.2);
+      placeCar(x + 2.5, NEAR + 2.2);
+    } else {
+      place(x, NEAR - 8.1, supermarket, { reach: 12, model: 'supermarket' });
+      place(x, NEAR + 0.05, carPark, { reach: 12 });
+      // Parked nose-in; one bay left empty.
+      const empty = Math.floor(rng() * 5);
+      for (let i = 0; i < 5; i++) if (i !== empty) placeCar(x - 5.6 + i * 2.8, NEAR - 0.55, Math.PI / 2);
+    }
   };
   shopAt(1946, 'supermarket');
   shopAt(1957, 'fastFood');
@@ -628,8 +639,8 @@ export const buildScenery = (kit: Kit): Scenery => {
   // ---- Grain silos out in the monocrops, clear of the pylons and sprayers ----
   for (const y of [1897.5, 1929, 1944, 1987]) {
     const x = xAtYear(y);
-    place(x, -25, grainSilo, { reach: 10, model: 'grain-silo' });
-    place(x + 6.6, -26.5, grainSilo, { reach: 10, model: 'grain-silo', scale: 0.85, rotY: 1.2 });
+    place(x, -26, grainSilo, { reach: 10, model: 'grain-silo' });
+    place(x + 6.6, -27.5, grainSilo, { reach: 10, model: 'grain-silo', scale: 0.85, rotY: 1.2 });
   }
 
   // ---- Giant monocrops (1900 →) -------------------------------------------
