@@ -2,6 +2,8 @@ import bpy, sys, math
 from mathutils import Vector, Matrix
 a = sys.argv[sys.argv.index('--') + 1:]
 blend, out, height, rot_deg = a[0], a[1], float(a[2]), float(a[3])
+# Optional 5th argument "nocentre": keep the model's own X/Y origin (hand-held items).
+centre = not (len(a) > 4 and a[4] == 'nocentre')
 bpy.ops.wm.open_mainfile(filepath=blend)
 ob = [o for o in bpy.data.objects if o.type == 'MESH'][0]
 bpy.context.view_layer.objects.active = ob; ob.select_set(True)
@@ -13,7 +15,7 @@ zs = [v.co.z for v in me.vertices]
 s = height / (max(zs) - min(zs))
 me.transform(Matrix.Scale(s, 4))
 xs = [v.co.x for v in me.vertices]; ys = [v.co.y for v in me.vertices]; zs = [v.co.z for v in me.vertices]
-me.transform(Matrix.Translation((-(max(xs) + min(xs)) / 2, -(max(ys) + min(ys)) / 2, -min(zs))))
+me.transform(Matrix.Translation((-(max(xs) + min(xs)) / 2 if centre else 0, -(max(ys) + min(ys)) / 2 if centre else 0, -min(zs))))
 me.update()
 for p in me.polygons: p.use_smooth = True
 sizes = {'Image_0': 2048, 'Image_1': 1024, 'Image_2': 2048}

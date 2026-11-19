@@ -81,10 +81,10 @@ export const WORLD_OBJECTS: WorldObject[] = [
   },
 
   // ---- Carried & worn --------------------------------------------------------
-  { id: 'spear', name: 'Wooden spear', category: 'carried', era: '300k BCE – 9,000 BCE', size: '2.1 long', notes: 'Straight wooden shaft; fire-hardened point early, hafted stone point later.', variants: ['Wooden point', 'Stone point'], status: 'placeholder' },
-  { id: 'hoe', name: 'Hoe / digging stick', category: 'carried', era: '9,000 BCE – 1800', size: '1.6 long', notes: 'Wooden handle; stone blade early, iron blade later.', variants: ['Stone blade', 'Iron blade'], status: 'placeholder' },
-  { id: 'soda-cup', name: 'Soda cup with straw', category: 'carried', era: '1955 – today', size: '0.20 tall', notes: 'Unbranded fast-food cup, lid and straw.', status: 'placeholder' },
-  { id: 'hat', name: 'Hat', category: 'carried', era: '1800 – 1940', size: '0.40 brim', notes: 'Dark felt hat, worn by the adults.', status: 'placeholder' },
+  { id: 'spear', name: 'Wooden spear', category: 'carried', era: '300k BCE – 9,000 BCE', size: '2.1 long', notes: 'Straight wooden shaft; fire-hardened point early, hafted stone point later.', variants: ['Wooden point', 'Stone point'], status: 'done' },
+  { id: 'hoe', name: 'Hoe / digging stick', category: 'carried', era: '9,000 BCE – 1800', size: '1.6 long', notes: 'Wooden handle; stone blade early, iron blade later.', variants: ['Stone blade', 'Iron blade'], status: 'done' },
+  { id: 'soda-cup', name: 'Soda cup with straw', category: 'carried', era: '1955 – today', size: '0.20 tall', notes: 'Unbranded fast-food cup, lid and straw.', status: 'done' },
+  { id: 'hat', name: 'Hat', category: 'carried', era: '1800 – 1940', size: '0.40 brim', notes: 'Dark felt hat, worn by the adults.', status: 'done' },
 
   // ---- Animals ---------------------------------------------------------------
   { id: 'antelope', name: 'Antelope', category: 'animals', era: '300k BCE – 115,000 BCE', size: '1.3 long, 0.9 at shoulder', notes: 'African savanna game.', status: 'done' },
@@ -101,21 +101,21 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'pine', name: 'Pine / spruce', category: 'plants', era: 'Ice age', size: '4–5 tall', notes: 'Conifer for the cold periods.', variants: ['Bare', 'Snow-laden'], status: 'done' },
   { id: 'broadleaf-tree', name: 'Broadleaf tree', category: 'plants', era: '9,700 BCE – today', size: '4–5.5 tall', notes: 'Oak-like temperate tree. 2–3 shape variants.', status: 'done' },
   { id: 'berry-bush', name: 'Berry bush', category: 'plants', era: '300k BCE – 30,000 BCE', size: '1.3 wide, 1.1 tall', notes: 'Visible red berries — gathered food.', status: 'done' },
-  { id: 'grass-tuft', name: 'Grass tuft', category: 'plants', era: '300k BCE – 1900', size: '0.6 tall', notes: 'Very light; scattered in large numbers.', status: 'placeholder' },
+  { id: 'grass-tuft', name: 'Grass tuft', category: 'plants', era: '300k BCE – 1900', size: '0.6 tall', notes: 'Very light; scattered in large numbers.', status: 'done' },
   { id: 'rock', name: 'Rock / boulder', category: 'plants', era: 'Whole journey', size: '0.5 – 3 across', notes: '3 shape variants.', variants: ['Bare', 'Snow-capped'], status: 'done' },
-  { id: 'glacier', name: 'Glacier front', category: 'plants', era: 'Ice age', size: '10–16 wide, 5–8 tall', notes: 'Blue-white ice wall for the far background.', status: 'placeholder' },
-  { id: 'mountain', name: 'Mountain', category: 'plants', era: 'Whole journey (backdrop)', size: '40–60 wide, 18–36 tall', notes: 'Distant backdrop only; low detail.', variants: ['Bare', 'Snow-capped'], status: 'placeholder' },
+  { id: 'glacier', name: 'Glacier front', category: 'plants', era: 'Ice age', size: '12.8 wide, 7 tall', notes: 'Blue-white ice wall for the far background.', status: 'done' },
+  { id: 'mountain', name: 'Mountain', category: 'plants', era: 'Whole journey (backdrop)', size: '40–60 wide, 18–36 tall', notes: 'Distant backdrop only; low detail.', variants: ['Bare', 'Snow-capped'], status: 'done' },
 
   // ---- Food & preparation --------------------------------------------------------
   { id: 'campfire', name: 'Campfire', category: 'food', era: '300k BCE – 10,000 BCE', size: '1.3 across', notes: 'Stone ring and logs. Flame and smoke are added in-engine.', status: 'done' },
   { id: 'spit-roast', name: 'Spit with roasting meat', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.2 wide, 1.3 tall', notes: 'Two forked posts, crossbar, haunch of meat. Sits over the campfire.', status: 'done' },
   { id: 'drying-rack', name: 'Meat & fish drying rack', category: 'food', era: '300k BCE – 10,000 BCE', size: '2.5 wide, 1.8 tall', notes: 'Strips of meat and fish air-drying on a pole frame — the oldest preservation method.', status: 'done' },
-  { id: 'spear-rack', name: 'Leaning spears', category: 'food', era: '300k BCE – 10,000 BCE', size: '0.8 wide, 2.2 tall', notes: 'Three spears stacked upright at camp.', status: 'placeholder' },
+  { id: 'spear-rack', name: 'Leaning spears', category: 'food', era: '300k BCE – 10,000 BCE', size: '1.4 wide, 2.2 tall', notes: 'Stone-tipped spears stood in a lashed pole frame at camp.', status: 'done' },
   { id: 'clay-oven', name: 'Clay oven with bread', category: 'food', era: '10,000 BCE – 1500', size: '1.7 dome, table 1.3 wide', notes: 'Domed earthen oven, glowing mouth, a side table of flat loaves.', status: 'done' },
   { id: 'ferment-jars', name: 'Fermentation jars', category: 'food', era: '10,000 BCE – 1500', size: '0.5 – 0.9 tall', notes: 'Sealed clay jars: beer, wine, pickles.', variants: ['Small', 'Large'], status: 'done' },
   { id: 'grain-sheaves', name: 'Grain sheaves', category: 'food', era: '10,000 BCE – 1800', size: '0.5 wide, 1.0 tall', notes: 'Bundled cut wheat or barley.', status: 'done' },
   { id: 'market-stall', name: 'Market stall', category: 'food', era: '1,000 BCE – 1700', size: '2.4 wide, 1.6 deep, 1.8 tall', notes: 'Awning over a counter with cheese wheels and bread; amphorae of oil and wine beside it.', variants: ['Red awning', 'Blue awning', 'Ochre awning'], status: 'done' },
-  { id: 'tin-cans', name: 'Stacked tins', category: 'food', era: '1800 – 1930', size: 'Each tin 0.45 across, 0.5 tall', notes: 'Pyramid of plain early tin cans outside the cannery.', status: 'placeholder' },
+  { id: 'tin-cans', name: 'Stacked tins', category: 'food', era: '1800 – 1930', size: 'Each tin 0.45 across, 0.5 tall', notes: 'Pyramid of six plain early tin cans outside the cannery.', status: 'done' },
   { id: 'quern', name: 'Grinding stone (quern)', category: 'food', era: '12,000 BCE – 1000 BCE', size: '0.6 long', notes: 'Saddle quern with handstone — stone-ground flour.', status: 'done' },
   { id: 'smokehouse', name: 'Smoking rack / smokehouse', category: 'food', era: 'Ice age – 1800', size: '2 × 2 × 2.5', notes: 'Smoked fish and meat.', status: 'done' },
   { id: 'olive-press', name: 'Olive / wine press', category: 'food', era: '1,000 BCE – 1500', size: '2.5 wide, 2.5 tall', notes: 'Traditional pressed oil — a contrast with the solvent-extracted seed oils later.', status: 'done' },

@@ -56,6 +56,15 @@ export const MODEL_IDS = [
   'crop-duster',
   'oil-drum',
   'watermill',
+  'mountain',
+  'glacier',
+  'grass-tuft',
+  'spear-rack',
+  'tin-cans',
+  'spear',
+  'hoe',
+  'soda-cup',
+  'hat',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 

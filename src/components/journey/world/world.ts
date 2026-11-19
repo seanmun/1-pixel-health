@@ -230,6 +230,8 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
       if (model) swapIn(slot.obj, model);
     }
     if (loaded['crop-duster']) swapIn(plane, loaded['crop-duster']);
+    for (const f of family)
+      f.fig.equip({ spear: loaded.spear, hoe: loaded.hoe, cup: loaded['soda-cup'], hat: loaded.hat });
     dirty = true;
   });
 

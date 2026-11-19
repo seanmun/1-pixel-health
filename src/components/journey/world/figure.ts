@@ -1,4 +1,4 @@
-import { CircleGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial } from 'three';
+import { CircleGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D } from 'three';
 import { Kit } from './kit';
 import { vitalsAt } from '../../../data/vitals';
 
@@ -203,10 +203,29 @@ export const createFigure = (kit: Kit, opts: FigureOptions) => {
     setBlend(footMat, cur.feet, next?.feet, t);
   };
 
+  /**
+   * Swap the drawn tools and hat for finished models. Each model stands
+   * upright with its origin at its base, so it is dropped to where the drawn
+   * one began.
+   */
+  const equip = (models: { spear?: Object3D; hoe?: Object3D; cup?: Object3D; hat?: Object3D }) => {
+    const fit = (slot: Group, model: Object3D | undefined, x: number, y: number) => {
+      if (!model) return;
+      const m = model.clone();
+      m.position.set(x, y, 0);
+      slot.clear();
+      slot.add(m);
+    };
+    fit(spear, models.spear, 0, -0.7);
+    fit(hoe, models.hoe, 0, -0.5);
+    fit(cup, models.cup, 0.06, -0.1);
+    fit(hat, models.hat, 0, -0.08);
+  };
+
   const dispose = () => {
     [topMat, armMat, legMat, footMat, shadowMat].forEach((m) => m.dispose());
     shadowGeo.dispose();
   };
 
-  return { root, update, dispose };
+  return { root, update, equip, dispose };
 };

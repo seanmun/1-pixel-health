@@ -10,6 +10,11 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
 hi = [o for o in bpy.data.objects if o.type == 'MESH'][0]
 bpy.context.view_layer.objects.active = hi; hi.select_set(True)
+# Metal has no diffuse colour, so it would bake black: treat the original as matte.
+for m0 in hi.data.materials:
+    b0 = m0.node_tree.nodes.get('Principled BSDF')
+    for l in list(b0.inputs['Metallic'].links): m0.node_tree.links.remove(l)
+    b0.inputs['Metallic'].default_value = 0
 bpy.ops.object.duplicate(); lo = bpy.context.view_layer.objects.active
 bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
 bpy.ops.mesh.remove_doubles(threshold=1e-5); bpy.ops.object.mode_set(mode='OBJECT')

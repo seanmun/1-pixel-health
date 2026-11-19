@@ -507,7 +507,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     place(x - 4, NEAR - 2.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: 0.25 });
     place(x + 4, NEAR - 3.5, (g) => hideTent(g, o.fur), { model: 'hide-tent', rotY: -0.4 });
     place(x - 1, NEAR + 2.2, dryingRack, { model: 'drying-rack' });
-    if (o.spears) place(x + 2.6, NEAR + 1.6, spearRack);
+    if (o.spears) place(x + 2.6, NEAR + 1.6, spearRack, { model: 'spear-rack', rotY: 0.3 });
     if (o.fire) {
       place(x + 1.2, NEAR + 0.3, campfire, { model: 'campfire' });
       place(x + 1.2, NEAR + 0.3, fire);
@@ -610,7 +610,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     const k = (w / 11) * 1.235;
     reserve(x - 5.6 * k - 2, x + 5.6 * k + 2);
     place(x, NEAR - 3.5, factory, { reach: 12, scale: k, model: 'brick-factory' });
-    if (cans) place(x + 5.6 * k - 2.6, NEAR + 1.6, tinCans);
+    if (cans) place(x + 5.6 * k - 2.6, NEAR + 1.6, tinCans, { model: 'tin-cans' });
   };
   factoryAt(xAtYear(1800) + 6, 8, true); // the first canneries
   factoryAt(xAtYear(1840), 9, false);
@@ -695,7 +695,12 @@ export const buildScenery = (kit: Kit): Scenery => {
   // ---- Backdrop mountains ---------------------------------------------------
   for (let x = -160; x < END + 140; x += rand(22, 34)) {
     const ice = iceAt(yearAtX(x));
-    place(x, rand(-112, -96), (g) => mountain(g, rand(18, 36), rand(42, 64), ice > 0.25 || rng() < 0.3), { reach: 40 });
+    const z = rand(-112, -96);
+    const h = rand(18, 36);
+    const w = rand(42, 64);
+    const snowy = ice > 0.25 || rng() < 0.3;
+    // Built 10 m tall and scaled, so the finished model takes the same height.
+    place(x, z, (g) => mountain(g, 10, (w / h) * 10, snowy), { reach: 40, scale: h / 10, model: 'mountain', rotY: w > 53 ? Math.PI : 0 });
   }
 
   // ---- Random filler ---------------------------------------------------------
@@ -724,7 +729,7 @@ export const buildScenery = (kit: Kit): Scenery => {
       if (nearFree) {
         if (r < 0.28) plantTree(nearZ);
         else if (r < 0.42) {
-          if (ice < 0.5) place(jx, nearZ, grass);
+          if (ice < 0.5) place(jx, nearZ, grass, { model: 'grass-tuft', rotY: jx * 7 });
           else placeRock(jx, nearZ, snowy);
         } else if (r < 0.48 && ice < 0.4) place(jx, nearZ, berryBush, { model: 'berry-bush', rotY: rng() * Math.PI * 2 });
         else if (r < 0.53) {
@@ -738,9 +743,9 @@ export const buildScenery = (kit: Kit): Scenery => {
       }
       if (r2 < 0.5) plantTree(farZ);
       else if (r2 < 0.58) placeRock(jx, farZ, snowy, rand(1.5, 3));
-      else if (r2 < 0.58 + ice * 0.08) place(jx, rand(-62, -44), glacier, { reach: 12 });
+      else if (r2 < 0.58 + ice * 0.08) place(jx, rand(-62, -44), glacier, { reach: 12, model: 'glacier' });
       if (r3 < 0.3) {
-        if (ice < 0.5 && rng() < 0.7) place(jx, frontZ, grass);
+        if (ice < 0.5 && rng() < 0.7) place(jx, frontZ, grass, { model: 'grass-tuft', rotY: jx * 7 });
         else placeRock(jx, frontZ, snowy, rand(0.3, 0.7));
       }
     } else if (x < mono0) {
@@ -759,7 +764,7 @@ export const buildScenery = (kit: Kit): Scenery => {
       }
       if (r2 < 0.45 * (1 - f * 0.6)) place(jx, farZ, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
       else if (r2 < 0.3 + f * 0.45) place(jx, farZ, (g) => field(g, big ? 9 : rand(4, 7), big ? 9 : rand(3, 6), big ? 9 : 5, crop, 0.45));
-      if (r3 < 0.22) place(jx, frontZ, grass);
+      if (r3 < 0.22) place(jx, frontZ, grass, { model: 'grass-tuft', rotY: jx * 7 });
       else if (r3 < 0.22 + f * 0.25) place(jx, frontZ + 1.5, (g) => field(g, rand(3, 5), 2.6, 5, crop, 0.18));
     } else {
       // Monocrop era: almost nothing but crop, the odd farmhouse and tree.
