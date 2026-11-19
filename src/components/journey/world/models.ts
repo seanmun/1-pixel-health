@@ -38,6 +38,16 @@ export const MODEL_IDS = [
   'ox-plough',
   'smokehouse',
   'fence',
+  'barn',
+  'brick-factory',
+  'seed-oil-refinery',
+  'coal-plant',
+  'grain-silo',
+  'tractor',
+  'combine',
+  'car',
+  'fast-food',
+  'supermarket',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 

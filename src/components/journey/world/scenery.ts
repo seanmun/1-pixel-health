@@ -267,6 +267,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.roof, roof, [0, h + 0.6, 0], [w * 1.12, 1.2, d * 1.12]);
     P(g, G.box, '#2a1f18', [0, 0.6, d / 2 + 0.01], [0.6, 1.2, 0.06]);
   };
+  const barn = (g: Group) => house(g, 5, 3, 4, '#8c3b2e', '#3f3632');
   const smokehouse = (g: Group) => house(g, 2.2, 1.6, 2, '#4a3f36', '#2f2a26');
   /** Screw press for olive oil and wine. */
   const olivePress = (g: Group) => {
@@ -324,23 +325,26 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.taper, color, [x, h / 2, z], [1.1, h, 1.1]);
     emit(g, 'smoke', x, h + 0.4, z);
   };
-  /** Brick factory. With `cans`: an early cannery, tins stacked out front. */
-  const factory = (g: Group, w: number, cans: boolean) => {
-    P(g, G.box, '#7a4032', [0, 2, 0], [w, 4, 5]);
-    const n = Math.round(w / 2.2);
-    for (let i = 0; i < n; i++) {
-      const x = -w / 2 + ((i + 0.5) * w) / n;
-      P(g, G.box, '#55413a', [x, 4.25, 0], [(w / n) * 0.92, 0.6, 5], [0, 0, 0.35]);
-      P(g, G.box, glowMat('#ffcf70'), [x, 2.2, 2.52], [0.7, 1, 0.05]);
+  /**
+   * Brick factory, 11 m long (placements scale it down). The chimneys sit where
+   * they do on the finished model so the smoke lines up after the swap.
+   */
+  const factory = (g: Group) => {
+    const w = 11;
+    P(g, G.box, '#7a4032', [0, 2, 0], [w, 4, 7]);
+    for (let i = 0; i < 5; i++) {
+      const x = -w / 2 + ((i + 0.5) * w) / 5;
+      P(g, G.box, '#55413a', [x, 4.25, 0], [(w / 5) * 0.92, 0.6, 7], [0, 0, 0.35]);
+      P(g, G.box, glowMat('#ffcf70'), [x, 2.2, 3.52], [0.7, 1, 0.05]);
     }
-    smokestack(g, -w / 2 + 1, -1.2, 9);
-    smokestack(g, -w / 2 + 3, -1.6, 7.5);
-    if (cans) {
-      for (let r = 0; r < 3; r++)
-        for (let i = 0; i < 4 - r; i++)
-          P(g, G.cyl, '#c9ced6', [w / 2 - 2.6 + i * 0.5 + r * 0.25, 0.25 + r * 0.5, 3.6], [0.45, 0.5, 0.45]);
-      P(g, G.box, '#7a5a3c', [w / 2 - 4.4, 0.4, 3.6], [1, 0.8, 0.8]);
-    }
+    smokestack(g, 5.15, -1.05, 8.5);
+    smokestack(g, 5.15, 1.1, 8.5);
+  };
+  /** An early cannery's tins, stacked out front. */
+  const tinCans = (g: Group) => {
+    for (let r = 0; r < 3; r++)
+      for (let i = 0; i < 4 - r; i++) P(g, G.cyl, '#c9ced6', [i * 0.5 + r * 0.25, 0.25 + r * 0.5, 0], [0.45, 0.5, 0.45]);
+    P(g, G.box, '#7a5a3c', [-1.8, 0.4, 0], [1, 0.8, 0.8]);
   };
   /**
    * Seed-oil refinery: storage tanks, stacks, purple drums of oil out front,
@@ -358,24 +362,24 @@ export const buildScenery = (kit: Kit): Scenery => {
       P(g, G.cyl, SEED_OIL, [x, 3.3, -0.5], [3.06, 0.9, 3.06]);
       P(g, G.ball, '#c9cdd3', [x, 5.5, -0.5], [3, 1.1, 3]);
     }
-    for (const [x, h] of [[-3.2, 12], [-1.7, 10]] as const) {
-      smokestack(g, x, -1.2, h, '#8a8f98');
-      P(g, G.cyl, '#c9483b', [x, h - 1.2, -1.2], [0.78, 0.7, 0.78]);
+    // Stacks and vents sit where they do on the finished model.
+    for (const [x, h] of [[-1.2, 11], [1.55, 8.85]] as const) smokestack(g, x, -4.45, h, '#8a8f98');
+    for (const x of [-3, 0, 3]) {
+      P(g, G.cyl, '#8a8f98', [x, 5.6, -1.6], [0.5, 0.9, 0.5]);
+      emit(g, 'vapour', x, 6.2, -1.6);
     }
-    // Wastewater lagoon out front; hexane vapour from the roof vents.
-    P(g, G.cyl, '#6f747c', [-2, 0.55, 4.6], [0.55, 3.4, 0.55], [Math.PI / 2, 0, 0]);
-    P(g, G.cyl, '#5d6158', [-2, 0.07, 7.6], [4.4, 0.08, 2.8]);
-    for (const x of [-2.5, 1, 3.5]) {
-      P(g, G.cyl, '#8a8f98', [x, 6, 1.5], [0.5, 0.9, 0.5]);
-      emit(g, 'vapour', x, 6.6, 1.5);
-    }
+  };
+  /** Purple drums of seed oil and the wastewater lagoon, out front of the refinery. */
+  const oilYard = (g: Group) => {
+    P(g, G.cyl, '#5d6158', [-5, 0.07, 0.6], [4.4, 0.08, 2.2]);
     for (let i = 0; i < 6; i++)
-      P(g, G.cyl, SEED_OIL, [2.6 + (i % 4) * 0.8 + (i > 3 ? 0.4 : 0), i > 3 ? 1.5 : 0.5, 4.4], [0.7, 1, 0.7]);
+      P(g, G.cyl, SEED_OIL, [(i % 4) * 0.8 + (i > 3 ? 0.4 : 0), i > 3 ? 1.5 : 0.5, 0], [0.7, 1, 0.7]);
   };
   const car = (g: Group, x: number, z: number, color: string) => {
     P(g, G.box, color, [x, 0.45, z], [1.9, 0.5, 0.9]);
     P(g, G.box, '#1f2328', [x - 0.1, 0.85, z], [1, 0.4, 0.8]);
   };
+  const placeCar = (x: number, z: number) => place(x, z, (g) => car(g, 0, 0, pick(CAR_COLORS)), { model: 'car' });
   const CAR_COLORS = ['#c0392b', '#2c6fb3', '#e6e6e6', '#3a3d44', '#d9a520'];
   /** Drive-through fast food with a glowing roadside sign. */
   const fastFood = (g: Group) => {
@@ -384,8 +388,6 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.box, glowMat('#ffe9a8'), [0, 1.5, 2.02], [3.4, 1, 0.05]);
     P(g, G.cyl, '#8a8f98', [3.8, 2.6, 2], [0.16, 5.2, 0.16]);
     P(g, G.box, glowMat('#ffc81f'), [3.8, 5.4, 2], [1.7, 1.3, 0.25]);
-    car(g, -1, 3.4, pick(CAR_COLORS));
-    car(g, 1.6, 3.4, pick(CAR_COLORS));
   };
   /** Supermarket: aisles of shelf-stable packaged food, and a car park. */
   const supermarket = (g: Group) => {
@@ -404,21 +406,35 @@ export const buildScenery = (kit: Kit): Scenery => {
   };
 
   // ---- Machines & energy --------------------------------------------------
-  /** Tractor; with `boom` it tows a tank and sprays the crop. */
-  const tractor = (g: Group, boom: number) => {
-    P(g, G.box, '#2f7d3a', [0.2, 0.95, 0], [1.9, 0.7, 1]);
+  const tractor = (g: Group) => {
+    P(g, G.box, '#b5332a', [0.2, 0.95, 0], [1.9, 0.7, 1]);
     P(g, G.box, '#263238', [-0.45, 1.65, 0], [0.9, 0.8, 0.9]);
     P(g, G.cyl, '#333', [0.9, 1.6, 0.3], [0.1, 0.7, 0.1]);
     for (const sz of [-0.62, 0.62]) {
       P(g, G.cyl, '#1b1b1d', [-0.5, 0.65, sz], [1.3, 0.3, 1.3], [Math.PI / 2, 0, 0]);
       P(g, G.cyl, '#1b1b1d', [0.9, 0.4, sz * 0.9], [0.8, 0.25, 0.8], [Math.PI / 2, 0, 0]);
     }
-    if (boom > 0) {
-      P(g, G.cyl, '#e8d44a', [-1.9, 1.0, 0], [1, 1.5, 1], [0, 0, Math.PI / 2]);
-      P(g, G.box, '#b9bdc4', [-2.8, 0.95, 0], [0.08, 0.08, boom]);
-      const n = Math.max(3, Math.round(boom / 1.5));
-      for (let i = 0; i < n; i++) emit(g, 'spray', -2.8, 0.85, -boom / 2 + (i / (n - 1)) * boom);
-    }
+  };
+  /** Tank and spray boom towed behind a tractor (its own slot, so the mist survives the model swap). */
+  const sprayRig = (g: Group, boom: number) => {
+    P(g, G.cyl, '#e8d44a', [-2.6, 1.0, 0], [1, 1.5, 1], [0, 0, Math.PI / 2]);
+    P(g, G.box, '#b9bdc4', [-3.5, 0.95, 0], [0.08, 0.08, boom]);
+    const n = Math.max(3, Math.round(boom / 1.5));
+    for (let i = 0; i < n; i++) emit(g, 'spray', -3.5, 0.85, -boom / 2 + (i / (n - 1)) * boom);
+  };
+  const placeTractor = (x: number, z: number, boom: number) => {
+    place(x, z, tractor, { model: 'tractor', reach: 8 });
+    if (boom > 0) place(x, z, (g) => sprayRig(g, boom), { reach: Math.max(8, boom) });
+  };
+  const combine = (g: Group) => {
+    P(g, G.box, '#2f7d3a', [-1, 2, 0], [6, 2.6, 3]);
+    P(g, G.box, '#263238', [1.6, 3, 0], [1.4, 1.4, 2]);
+    P(g, G.box, '#2f7d3a', [3.6, 0.7, 0], [1.6, 1.1, 6.8]);
+    for (const sz of [-1.6, 1.6]) P(g, G.cyl, '#1b1b1d', [1, 0.9, sz], [1.8, 0.5, 1.8], [Math.PI / 2, 0, 0]);
+  };
+  const grainSilo = (g: Group) => {
+    P(g, G.cyl, '#b9bdc4', [0, 6, 0], [6.6, 12, 6.6]);
+    P(g, G.cone, '#a4a9b0', [0, 13, 0], [6.8, 2, 6.8]);
   };
   const pylon = (g: Group, wire: number) => {
     for (const sz of [-0.6, 0.6]) P(g, G.box, '#7d8590', [0, 4.5, sz * 0.7], [0.14, 9, 0.14], [sz * 0.1, 0, 0]);
@@ -428,14 +444,15 @@ export const buildScenery = (kit: Kit): Scenery => {
   };
   /** Coal power station: boiler hall, stack, cooling towers, coal heap. */
   const coalPlant = (g: Group) => {
-    P(g, G.box, '#6d6f76', [0, 2, 0], [8, 4, 5]);
-    for (let i = 0; i < 3; i++) P(g, G.box, glowMat('#ffcf70'), [-2.4 + i * 2.4, 2.4, 2.52], [1, 1.4, 0.05]);
-    smokestack(g, -3, -1, 14, '#5e5a57');
-    for (let i = 0; i < 2; i++) {
-      P(g, G.taper, '#b8b4ac', [7 + i * 5.4, 4, -1], [5, 8, 5]);
-      emit(g, 'steam', 7 + i * 5.4, 8.6, -1);
+    // Stack and cooling towers sit where they do on the finished model.
+    P(g, G.box, '#6d6f76', [-2.5, 2, -2.5], [8, 4, 5]);
+    for (let i = 0; i < 3; i++) P(g, G.box, glowMat('#ffcf70'), [-4.9 + i * 2.4, 2.4, 0.02], [1, 1.4, 0.05]);
+    smokestack(g, 2.5, -1.95, 14, '#5e5a57');
+    for (const [x, z] of [[-1.3, 4], [3.9, 3.8]] as const) {
+      P(g, G.taper, '#b8b4ac', [x, 2.9, z], [4.4, 5.75, 4.4]);
+      emit(g, 'steam', x, 6.2, z);
     }
-    P(g, G.cone, '#1c1c1f', [-6.5, 0.8, 2], [4.2, 1.6, 3.2]);
+    P(g, G.cone, '#1c1c1f', [-6, 0.8, 3], [3, 1.6, 3]);
   };
   const windTurbine = (g: Group, x: number) => {
     P(g, G.cyl, '#eef1f4', [0, 6, 0], [0.36, 12, 0.36]);
@@ -560,7 +577,7 @@ export const buildScenery = (kit: Kit): Scenery => {
   {
     const x = xAtYear(1650);
     reserve(x - 9, x + 9);
-    place(x - 4, NEAR - 4, (g) => house(g, 5, 3, 4, '#8c3b2e', '#3f3632'));
+    place(x - 4, NEAR - 4, barn, { model: 'barn' });
     place(x + 5, NEAR - 3, (g) => windmill(g, x + 5));
     place(x + 1.5, NEAR + 1.6, (g) => field(g, 7, 3.4, 6, '#6f9a3a', 0.9)); // maize
     for (let i = 0; i < 3; i++) placeCow(x - 7 + i * 1.5, NEAR + 1.5 + (i % 2));
@@ -568,38 +585,52 @@ export const buildScenery = (kit: Kit): Scenery => {
 
   // ---- Industry ------------------------------------------------------------
   const factoryAt = (x: number, w: number, cans: boolean) => {
-    reserve(x - w / 2 - 2, x + w / 2 + 2);
-    place(x, NEAR - 2.5, (g) => factory(g, w, cans), { reach: 12 });
+    reserve(x - w / 2 - 3, x + w / 2 + 3);
+    place(x, NEAR - 2.5, factory, { reach: 12, scale: w / 11, model: 'brick-factory' });
+    if (cans) place(x + w / 2 - 2.6, NEAR + 1.8, tinCans);
   };
   factoryAt(xAtYear(1800) + 6, 8, true); // the first canneries
   factoryAt(xAtYear(1840), 9, false);
   factoryAt(xAtYear(1868), 11, true);
   {
     const x = xAtYear(1888);
-    reserve(x - 10, x + 17);
-    place(x, NEAR - 4, coalPlant, { reach: 20 });
+    reserve(x - 9, x + 9);
+    place(x, NEAR - 5.5, coalPlant, { reach: 20, model: 'coal-plant' });
   }
   const plantAt = (year: number) => {
     const x = xAtYear(year);
-    reserve(x - 6, x + 17);
-    place(x, NEAR - 4.5, seedOilPlant, { reach: 20 });
+    reserve(x - 8, x + 9);
+    place(x, NEAR - 5.5, seedOilPlant, { reach: 20, model: 'seed-oil-refinery' });
+    place(x + 3, NEAR + 1.7, oilYard);
   };
   plantAt(1911); // hydrogenated cottonseed oil reaches the kitchen
   plantAt(1978);
-  plantAt(2012);
+  plantAt(2013.3);
   factoryAt(xAtYear(1930), 10, true);
   const shopAt = (year: number, kind: 'fastFood' | 'supermarket') => {
     const x = xAtYear(year);
-    const hw = kind === 'fastFood' ? 5 : 8;
+    const hw = kind === 'fastFood' ? 5.5 : 8.5;
     reserve(x - hw, x + hw);
-    place(x, kind === 'fastFood' ? NEAR - 1.5 : NEAR - 5.5, kind === 'fastFood' ? fastFood : supermarket, { reach: 12 });
+    if (kind === 'fastFood') {
+      place(x, NEAR - 1.5, fastFood, { reach: 12, model: 'fast-food' });
+      // The drive-through queue.
+      placeCar(x - 2.6, NEAR + 2.3);
+      placeCar(x + 2.5, NEAR + 2.3);
+    } else place(x, NEAR - 3.7, supermarket, { reach: 12, model: 'supermarket' });
   };
   shopAt(1946, 'supermarket');
   shopAt(1957, 'fastFood');
   shopAt(1966, 'supermarket');
-  shopAt(1994, 'fastFood');
+  shopAt(1992.3, 'fastFood'); // nudged clear of the 2002 supermarket
   shopAt(2002, 'supermarket');
   shopAt(2023, 'fastFood');
+
+  // ---- Grain silos out in the monocrops, clear of the pylons and sprayers ----
+  for (const y of [1897.5, 1929, 1944, 1987]) {
+    const x = xAtYear(y);
+    place(x, -25, grainSilo, { reach: 10, model: 'grain-silo' });
+    place(x + 6.6, -26.5, grainSilo, { reach: 10, model: 'grain-silo', scale: 0.85, rotY: 1.2 });
+  }
 
   // ---- Giant monocrops (1900 →) -------------------------------------------
   const END = WORLD_LEN + 70;
@@ -614,10 +645,12 @@ export const buildScenery = (kit: Kit): Scenery => {
   for (const y of [1950, 1972, 1988, 2008, 2019]) {
     let x = xAtYear(y) + 3;
     while (isReserved(x - 4, x + 3)) x += 2;
-    place(x, -5.8, (g) => tractor(g, 4.5), { reach: 8 });
-    place(x + 9, -24, (g) => tractor(g, 12), { reach: 12 });
+    placeTractor(x, -5.8, 4.5);
+    placeTractor(x + 9, -24, 12);
   }
-  for (const y of [1915, 1925, 1938]) place(xAtYear(y), -22, (g) => tractor(g, 0));
+  for (const y of [1915, 1925, 1938]) placeTractor(xAtYear(y), -22, 0);
+  // Combines working the far fields: a scale cue for how big they are.
+  for (const y of [1960, 1980, 1996, 2011.5]) place(xAtYear(y) + 5, -33, combine, { reach: 10, model: 'combine' });
 
   // ---- Power grid, skyline, renewables -------------------------------------
   for (let x = xAtYear(1890); x < END; x += 16) place(x, -19.5, (g) => pylon(g, 16), { reach: 18 });
@@ -701,7 +734,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     } else {
       // Monocrop era: almost nothing but crop, the odd farmhouse and tree.
       if (nearFree && r < 0.03) place(jx, -17, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
-      if (r2 < 0.02) place(jx, rand(-58, -46), (g) => house(g, 5, 3, 4, '#8c3b2e', '#3f3632'));
+      if (r2 < 0.02) place(jx, rand(-58, -46), barn, { model: 'barn', rotY: rand(-0.4, 0.4) });
     }
   }
 

@@ -127,7 +127,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'granary', name: 'Granary', category: 'shelter', era: '5,000 BCE – 1000 BCE', size: '2.0 across, 3.7 tall', notes: 'Round raised grain store.', status: 'done' },
   { id: 'stone-hall', name: 'Columned stone hall', category: 'shelter', era: '3,000 BCE – 1500', size: '6.4 × 4.4 × 4.2', notes: 'Temple or civic building with a five-column front.', status: 'done' },
   { id: 'city-block', name: 'Stone town houses', category: 'shelter', era: '1,000 BCE – 500', size: 'Row of three, each 2.1 × 2.6 × 2–4', notes: 'Flat-roofed masonry houses.', status: 'done' },
-  { id: 'barn', name: 'Barn / farmhouse', category: 'shelter', era: '1650 – today', size: '5 × 4 × 4.2', notes: 'Red timber barn, dark roof.', status: 'placeholder' },
+  { id: 'barn', name: 'Barn / farmhouse', category: 'shelter', era: '1650 – today', size: '5 × 4 × 4.2', notes: 'Red timber barn, dark roof.', status: 'done' },
   { id: 'skyscraper', name: 'City tower', category: 'shelter', era: '1925 – today (far background)', size: '4–7 square, 6–36 tall', notes: 'Distant skyline; lit windows. 3–4 variants of increasing height.', status: 'placeholder' },
 
   // ---- Farms & fields -----------------------------------------------------------------
@@ -135,25 +135,25 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'maize-field', name: 'Maize field', category: 'farms', era: '1650 – 1900', size: '7 × 3.4, plants 0.9–2 tall', notes: 'New World crop after the Columbian Exchange.', status: 'placeholder' },
   { id: 'monocrop-field', name: 'Monocrop field block', category: 'farms', era: '1900 – today', size: '24 long × 11–44 deep (tiles end to end)', notes: 'Perfectly uniform rows to the horizon. Must tile seamlessly along its length.', variants: ['Corn', 'Soy'], status: 'placeholder' },
   { id: 'fence', name: 'Field fence / dry-stone wall', category: 'farms', era: '5,000 BCE – 1900', size: '3 long sections', notes: 'Separates the small plots; disappears in the monocrop era.', status: 'done' },
-  { id: 'grain-silo', name: 'Grain silo / elevator', category: 'farms', era: '1900 – today', size: '6 across, 20 tall', notes: 'Industrial-scale grain storage.', status: 'wishlist' },
+  { id: 'grain-silo', name: 'Grain silo / elevator', category: 'farms', era: '1900 – today', size: '6 across, 20 tall', notes: 'Industrial-scale grain storage.', status: 'done' },
 
   // ---- Industry & retail ------------------------------------------------------------------
-  { id: 'brick-factory', name: 'Brick factory / cannery', category: 'industry', era: '1800 – 1940', size: '8–11 × 5 × 4.5, chimneys 7.5–9 tall', notes: 'Sawtooth roof, lit windows, two brick chimneys. Smoke is added in-engine.', variants: ['8 m', '11 m'], status: 'placeholder' },
-  { id: 'seed-oil-refinery', name: 'Seed-oil refinery', category: 'industry', era: '1911 – today', size: 'Main hall 9 × 6 × 5.6; three tanks 3 across, 6.5 tall; stacks 10 and 12 tall', notes: 'Process hall, three storage tanks with a purple band, two striped stacks, roof vents, a pipe to a wastewater lagoon, purple oil drums out front. Vent vapour is added in-engine.', status: 'placeholder' },
+  { id: 'brick-factory', name: 'Brick factory / cannery', category: 'industry', era: '1800 – 1940', size: '8–11 × 5 × 4.5, chimneys 7.5–9 tall', notes: 'Sawtooth roof, lit windows, two brick chimneys. Smoke is added in-engine.', variants: ['8 m', '11 m'], status: 'done' },
+  { id: 'seed-oil-refinery', name: 'Seed-oil refinery', category: 'industry', era: '1911 – today', size: 'Main hall 9 × 6 × 5.6; three tanks 3 across, 6.5 tall; stacks 10 and 12 tall', notes: 'Process hall, three storage tanks with a purple band, two striped stacks, roof vents, a pipe to a wastewater lagoon, purple oil drums out front. Vent vapour is added in-engine.', status: 'done' },
   { id: 'oil-drum', name: 'Oil drum', category: 'industry', era: '1911 – today', size: '0.7 across, 1.0 tall', notes: 'Purple (the site\'s seed-oil colour).', status: 'placeholder' },
-  { id: 'fast-food', name: 'Drive-through fast-food restaurant', category: 'industry', era: '1957 – today', size: '5 × 4 × 3.1, sign pole 6 tall', notes: 'Unbranded: red box, yellow roof slab, lit window, tall glowing roadside sign.', status: 'placeholder' },
-  { id: 'supermarket', name: 'Supermarket with car park', category: 'industry', era: '1946 – today', size: '12 × 7 × 3.8, car park 13 × 5', notes: 'Unbranded: white box, blue fascia, glazed front.', status: 'placeholder' },
-  { id: 'car', name: 'Car', category: 'industry', era: '1946 – today', size: '4.2 × 1.8 × 1.4', notes: 'Generic sedan in five colours. 1950s and modern shapes.', variants: ['1950s', 'Modern'], status: 'placeholder' },
+  { id: 'fast-food', name: 'Drive-through fast-food restaurant', category: 'industry', era: '1957 – today', size: '5 × 4 × 3.1, sign pole 6 tall', notes: 'Unbranded: red box, yellow roof slab, lit window, tall glowing roadside sign.', status: 'done' },
+  { id: 'supermarket', name: 'Supermarket with car park', category: 'industry', era: '1946 – today', size: '12 × 7 × 3.8, car park 13 × 5', notes: 'Unbranded: white box, blue fascia, glazed front.', status: 'done' },
+  { id: 'car', name: 'Car', category: 'industry', era: '1946 – today', size: '4.2 × 1.8 × 1.4', notes: 'Generic sedan in five colours. 1950s and modern shapes.', variants: ['1950s', 'Modern'], status: 'done' },
 
   // ---- Machines ------------------------------------------------------------------------------
-  { id: 'tractor', name: 'Tractor', category: 'machines', era: '1915 – today', size: '3.5 × 2 × 2.6', notes: 'Green farm tractor.', variants: ['1920s', 'Modern'], status: 'placeholder' },
+  { id: 'tractor', name: 'Tractor', category: 'machines', era: '1915 – today', size: '3.5 × 2 × 2.6', notes: 'Red mid-century farm tractor.', variants: ['1920s', 'Modern'], status: 'done' },
   { id: 'sprayer-rig', name: 'Boom sprayer', category: 'machines', era: '1950 – today', size: 'Boom 4.5–12 wide', notes: 'Yellow tank and folding spray boom towed behind the tractor. Spray mist is added in-engine.', status: 'placeholder' },
   { id: 'crop-duster', name: 'Crop duster', category: 'machines', era: '1945 – today', size: '8 wingspan, 6 long', notes: 'Yellow single-engine agricultural aircraft. Spray trail is added in-engine.', status: 'placeholder' },
-  { id: 'combine', name: 'Combine harvester', category: 'machines', era: '1950 – today', size: '9 long, header 9 wide', notes: 'Scale cue for the giant fields.', status: 'wishlist' },
+  { id: 'combine', name: 'Combine harvester', category: 'machines', era: '1950 – today', size: '9 long, header 9 wide', notes: 'Scale cue for the giant fields.', status: 'done' },
 
   // ---- Energy ---------------------------------------------------------------------------------
   { id: 'windmill', name: 'Tower windmill', category: 'energy', era: '1185 – 1850', size: '2.4 base, 6 tall, sails 6.5 across', notes: 'Stone tower, four cloth sails. Sails must be a separate part pivoting at the hub so they can turn.', status: 'placeholder' },
-  { id: 'coal-plant', name: 'Coal power station', category: 'energy', era: '1888 – today', size: 'Hall 8 × 5 × 4; stack 14 tall; two cooling towers 5 across, 8 tall', notes: 'Boiler hall, tall stack, two cooling towers, coal heap. Smoke and steam are added in-engine.', status: 'placeholder' },
+  { id: 'coal-plant', name: 'Coal power station', category: 'energy', era: '1888 – today', size: 'Hall 8 × 5 × 4; stack 14 tall; two cooling towers 5 across, 8 tall', notes: 'Boiler hall, tall stack, two cooling towers, coal heap. Smoke and steam are added in-engine.', status: 'done' },
   { id: 'pylon', name: 'Transmission pylon', category: 'energy', era: '1890 – today', size: '3.4 wide, 9 tall, every 16 m', notes: 'Lattice tower. Wires are drawn in-engine between pylons.', status: 'placeholder' },
   { id: 'wind-turbine', name: 'Wind turbine', category: 'energy', era: '2004 – today', size: '12 tower, 10 rotor', notes: 'White three-blade turbine. Rotor must be a separate part pivoting at the hub.', status: 'placeholder' },
   { id: 'solar-array', name: 'Solar array', category: 'energy', era: '2010 – today', size: 'Row of four panels, 7.5 long', notes: 'Tilted ground-mount panels.', status: 'placeholder' },
