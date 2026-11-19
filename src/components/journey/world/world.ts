@@ -229,6 +229,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
       const model = loaded[slot.id];
       if (model) swapIn(slot.obj, model);
     }
+    if (loaded['crop-duster']) swapIn(plane, loaded['crop-duster']);
     dirty = true;
   });
 

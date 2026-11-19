@@ -48,6 +48,14 @@ export const MODEL_IDS = [
   'car',
   'fast-food',
   'supermarket',
+  'windmill',
+  'wind-turbine',
+  'sprayer-rig',
+  'solar-array',
+  'skyscraper',
+  'crop-duster',
+  'oil-drum',
+  'watermill',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 

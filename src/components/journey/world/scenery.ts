@@ -294,19 +294,36 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.cyl, '#c2a878', [0, 1.3, 0], [2, 2.6, 2]);
     P(g, G.cone, '#7a6238', [0, 3.1, 0], [2.5, 1.2, 2.5]);
   };
-  const windmill = (g: Group, x: number) => {
-    P(g, G.taper, '#cbbfa8', [0, 2.5, 0], [2.4, 5, 2.4]);
-    P(g, G.cone, '#6b4a3a', [0, 5.45, 0], [1.7, 0.9, 1.7]);
-    const rotor = new Group();
-    rotor.position.set(0, 4.9, 1.0);
-    for (let i = 0; i < 4; i++) {
-      const blade = new Group();
-      blade.rotation.z = (i * Math.PI) / 2;
-      P(blade, G.box, '#e8dcc0', [0, 1.6, 0], [0.4, 3, 0.06]);
-      rotor.add(blade);
-    }
-    g.add(rotor);
-    spinners.push({ obj: rotor, speed: 0.6, x });
+  const windmill = (g: Group) => {
+    P(g, G.taper, '#cbbfa8', [0, 2.9, 0], [3, 5.8, 3]);
+    P(g, G.cone, '#6b4a3a', [0, 6.4, 0], [2.2, 1.2, 2.2]);
+  };
+  /** A set of turning arms in its own slot, so it survives the tower's model swap. */
+  const rotorAt = (x: number, z: number, hub: [number, number], n: number, len: number, wide: number, color: string, speed: number) =>
+    place(x, z, (g) => {
+      const rotor = new Group();
+      rotor.position.set(0, hub[0], hub[1]);
+      for (let i = 0; i < n; i++) {
+        const blade = new Group();
+        blade.rotation.z = (i * Math.PI * 2) / n;
+        P(blade, G.box, color, [0, len / 2 + 0.1, 0], [wide, len, 0.06]);
+        rotor.add(blade);
+      }
+      g.add(rotor);
+      spinners.push({ obj: rotor, speed, x });
+    }, { reach: 10 });
+  /** Tower windmill with four turning sails on the cap's axle. */
+  const placeWindmill = (x: number, z: number) => {
+    place(x, z, windmill, { model: 'windmill', reach: 8 });
+    rotorAt(x, z, [5.2, 2.6], 4, 3, 0.45, '#e8dcc0', 0.6);
+  };
+  const watermill = (g: Group) => {
+    house(g, 4, 3.4, 4.3, '#9c9486', '#5b4a3c');
+    P(g, G.cyl, '#5b4030', [2.2, 1.75, 0], [3.5, 0.5, 3.5], [0, 0, Math.PI / 2]);
+  };
+  /** The stream that drives the watermill's wheel. */
+  const millRace = (g: Group) => {
+    P(g, G.box, '#3f6f8f', [0, 0.04, 0], [1.3, 0.08, 9]);
   };
   const stoneHall = (g: Group) => {
     P(g, G.box, '#b9b0a0', [0, 0.2, 0], [6.4, 0.4, 4.4]);
@@ -372,8 +389,9 @@ export const buildScenery = (kit: Kit): Scenery => {
   /** Purple drums of seed oil and the wastewater lagoon, out front of the refinery. */
   const oilYard = (g: Group) => {
     P(g, G.cyl, '#5d6158', [-5, 0.07, 0.6], [4.4, 0.08, 2.2]);
-    for (let i = 0; i < 6; i++)
-      P(g, G.cyl, SEED_OIL, [(i % 4) * 0.8 + (i > 3 ? 0.4 : 0), i > 3 ? 1.5 : 0.5, 0], [0.7, 1, 0.7]);
+  };
+  const oilDrum = (g: Group) => {
+    P(g, G.cyl, SEED_OIL, [0, 0.5, 0], [0.7, 1, 0.7]);
   };
   const car = (g: Group, x: number, z: number, color: string) => {
     P(g, G.box, color, [x, 0.45, z], [1.9, 0.5, 0.9]);
@@ -400,12 +418,11 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.box, '#26272c', [0, 0.03, 0], [16, 0.06, 6.5]);
     for (let i = 0; i < 6; i++) P(g, G.box, '#e9e9e4', [-7 + i * 2.8, 0.07, -0.6], [0.1, 0.02, 4.6]);
   };
-  const skyscraper = (g: Group, h: number) => {
-    const w = rand(4, 7);
-    P(g, G.box, pick(['#262b40', '#2b2f45', '#222638']), [0, h / 2, 0], [w, h, w]);
-    const n = Math.floor(h / 2.2);
-    for (let i = 0; i < n; i++)
-      if (rng() < 0.75) P(g, G.box, glowMat('#ffd98a'), [0, 1.6 + i * 2.2, w / 2 + 0.03], [w * 0.8, 0.22, 0.03]);
+  /** City tower, 10 m tall; placements scale it up for the growing skyline. */
+  const skyscraper = (g: Group) => {
+    P(g, G.box, pick(['#262b40', '#2b2f45', '#222638']), [0, 5, 0], [3.6, 10, 3.4]);
+    for (let i = 0; i < 9; i++)
+      if (rng() < 0.75) P(g, G.box, glowMat('#ffd98a'), [0, 1 + i, 1.73], [2.9, 0.12, 0.03]);
   };
 
   // ---- Machines & energy --------------------------------------------------
@@ -419,15 +436,18 @@ export const buildScenery = (kit: Kit): Scenery => {
     }
   };
   /** Tank and spray boom towed behind a tractor (its own slot, so the mist survives the model swap). */
-  const sprayRig = (g: Group, boom: number) => {
-    P(g, G.cyl, '#e8d44a', [-2.6, 1.0, 0], [1, 1.5, 1], [0, 0, Math.PI / 2]);
-    P(g, G.box, '#b9bdc4', [-3.5, 0.95, 0], [0.08, 0.08, boom]);
-    const n = Math.max(3, Math.round(boom / 1.5));
-    for (let i = 0; i < n; i++) emit(g, 'spray', -3.5, 0.85, -boom / 2 + (i / (n - 1)) * boom);
+  /** Trailed sprayer, boom 6 m wide (placements scale it). Mist comes off the rear boom. */
+  const sprayRig = (g: Group) => {
+    P(g, G.cyl, '#e8d44a', [0.1, 0.9, 0], [0.9, 1.4, 0.9], [0, 0, Math.PI / 2]);
+    P(g, G.box, '#b9bdc4', [-1.2, 0.62, 0], [0.08, 0.08, 6]);
+    for (let i = 0; i < 7; i++) emit(g, 'spray', -1.2, 0.55, -3 + i);
   };
+  /** Tractor; with `boom` (metres) it tows a sprayer of that width. */
   const placeTractor = (x: number, z: number, boom: number) => {
     place(x, z, tractor, { model: 'tractor', reach: 8 });
-    if (boom > 0) place(x, z, (g) => sprayRig(g, boom), { reach: Math.max(8, boom) });
+    const k = boom / 6;
+    // Hitched behind the tractor, in its own slot so the mist survives the model swap.
+    if (boom > 0) place(x - 1.55 - 1.38 * k, z, sprayRig, { model: 'sprayer-rig', scale: k, reach: Math.max(8, boom) });
   };
   const combine = (g: Group) => {
     P(g, G.box, '#2f7d3a', [-1, 2, 0], [6, 2.6, 3]);
@@ -457,24 +477,18 @@ export const buildScenery = (kit: Kit): Scenery => {
     }
     P(g, G.cone, '#1c1c1f', [-6, 0.8, 3], [3, 1.6, 3]);
   };
-  const windTurbine = (g: Group, x: number) => {
-    P(g, G.cyl, '#eef1f4', [0, 6, 0], [0.36, 12, 0.36]);
-    P(g, G.ball, '#eef1f4', [0, 12, 0.3], [0.7, 0.7, 0.9]);
-    const rotor = new Group();
-    rotor.position.set(0, 12, 0.6);
-    for (let i = 0; i < 3; i++) {
-      const blade = new Group();
-      blade.rotation.z = (i * Math.PI * 2) / 3;
-      P(blade, G.box, '#eef1f4', [0, 2.5, 0], [0.32, 5, 0.06]);
-      rotor.add(blade);
-    }
-    g.add(rotor);
-    spinners.push({ obj: rotor, speed: 1.3, x });
+  const windTurbine = (g: Group) => {
+    P(g, G.cyl, '#eef1f4', [0, 5.9, 0], [0.5, 11.8, 0.5]);
+    P(g, G.ball, '#eef1f4', [0, 11.75, 0.4], [0.9, 0.9, 2.6]);
+  };
+  const placeWindTurbine = (x: number, z: number) => {
+    place(x, z, windTurbine, { model: 'wind-turbine', reach: 10 });
+    rotorAt(x, z, [11.75, 1.8], 3, 5, 0.32, '#eef1f4', 1.3);
   };
   const solarArray = (g: Group) => {
     for (let i = 0; i < 4; i++) {
-      P(g, G.box, '#243b7a', [i * 1.9, 0.95, 0], [1.7, 0.06, 1.2], [0.55, 0, 0]);
-      P(g, G.cyl, '#8a8f98', [i * 1.9, 0.45, 0], [0.08, 0.9, 0.08]);
+      P(g, G.box, '#243b7a', [-2.85 + i * 1.9, 1.4, 0], [1.7, 0.06, 2.6], [0.55, 0, 0]);
+      P(g, G.cyl, '#8a8f98', [-2.85 + i * 1.9, 0.6, -0.5], [0.08, 1.2, 0.08]);
     }
   };
 
@@ -533,8 +547,8 @@ export const buildScenery = (kit: Kit): Scenery => {
   farmstead(xAtYear(-10000) + 6, { huts: 2, bake: true, herd: null });
   farmstead(xAtYear(-8000) + 4, { huts: 3, bake: false, herd: 'sheep' });
 
-  const village = (x: number, o: { houses: number; hall: boolean; mill: boolean; market: boolean }) => {
-    reserve(x - 13, x + 13);
+  const village = (x: number, o: { houses: number; hall: boolean; mill: boolean; market: boolean; water?: boolean }) => {
+    reserve(x - 13, x + (o.water ? 15.5 : 13));
     for (let i = 0; i < o.houses; i++)
       place(
         x - 11 + i * 3.8,
@@ -544,7 +558,11 @@ export const buildScenery = (kit: Kit): Scenery => {
       );
     if (o.hall) place(x + 7, NEAR - 6, stoneHall, { model: 'stone-hall' });
     else place(x + 8, NEAR - 5, granary, { model: 'granary', rotY: rand(-0.4, 0.4) });
-    if (o.mill) place(x + 11.5, NEAR - 1.5, (g) => windmill(g, x + 11.5));
+    if (o.mill) placeWindmill(x + 11.5, NEAR - 2);
+    else if (o.water) {
+      place(x + 11.8, NEAR - 3, watermill, { model: 'watermill' });
+      place(x + 14.2, NEAR - 2, millRace);
+    }
     if (o.market) {
       place(x - 2, NEAR + 2.2, stall, { model: 'market-stall' });
       place(x - 4.6, NEAR + 2.4, olivePress, { model: 'olive-press' });
@@ -573,15 +591,15 @@ export const buildScenery = (kit: Kit): Scenery => {
     place(x + 4, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
     placeOven(x + 9, NEAR + 1.8);
   }
-  village(xAtYear(1), { houses: 5, hall: true, mill: false, market: true });
-  village(xAtYear(1000), { houses: 4, hall: false, mill: false, market: true });
+  village(xAtYear(1), { houses: 5, hall: true, mill: false, market: true, water: true }); // watermills: Roman era on
+  village(xAtYear(1000), { houses: 4, hall: false, mill: false, market: true, water: true });
   village(xAtYear(1250), { houses: 4, hall: false, mill: true, market: true }); // windmills: Europe from 1185
   village(xAtYear(1500) + 4, { houses: 6, hall: true, mill: true, market: true });
   {
     const x = xAtYear(1650);
     reserve(x - 9, x + 9);
     place(x - 4, NEAR - 4, barn, { model: 'barn' });
-    place(x + 5, NEAR - 3, (g) => windmill(g, x + 5));
+    placeWindmill(x + 5, NEAR - 3);
     place(x + 1.5, NEAR + 1.6, (g) => field(g, 7, 3.4, 6, '#6f9a3a', 0.9)); // maize
     for (let i = 0; i < 3; i++) placeCow(x - 7 + i * 1.5, NEAR + 1.5 + (i % 2));
   }
@@ -607,6 +625,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     reserve(x - 8, x + 9);
     place(x, NEAR - 5.5, seedOilPlant, { reach: 20, model: 'seed-oil-refinery' });
     place(x + 3, NEAR + 1.7, oilYard);
+    for (let i = 0; i < 6; i++) place(x + 3 + (i % 4) * 0.85 + (i > 3 ? 0.4 : 0), NEAR + 1.7 + (i > 3 ? 0.8 : 0), oilDrum, { model: 'oil-drum', rotY: rng() * 6 });
   };
   plantAt(1911); // hydrogenated cottonseed oil reaches the kitchen
   plantAt(1978);
@@ -668,10 +687,10 @@ export const buildScenery = (kit: Kit): Scenery => {
   const sky0 = xAtYear(1925);
   for (let x = sky0; x < END; x += rand(5, 9)) {
     const growth = Math.min(1, (x - sky0) / (WORLD_LEN - sky0));
-    place(x, rand(-82, -62), (g) => skyscraper(g, 6 + growth * rand(8, 30)), { reach: 10 });
+    place(x, rand(-82, -62), skyscraper, { reach: 10, model: 'skyscraper', scale: (6 + growth * rand(8, 30)) / 10, rotY: pick([0, Math.PI / 2]) });
   }
-  for (let x = xAtYear(2004); x < END; x += 11) place(x, rand(-34, -28), (g) => windTurbine(g, x), { reach: 10 });
-  for (let x = xAtYear(2010) + 3; x < END; x += 14) place(x, -16.5, solarArray, { reach: 10, scale: 1.4 });
+  for (let x = xAtYear(2004); x < END; x += 11) placeWindTurbine(x, rand(-34, -28));
+  for (let x = xAtYear(2010) + 3; x < END; x += 14) place(x, -16.5, solarArray, { reach: 10, model: 'solar-array' });
 
   // ---- Backdrop mountains ---------------------------------------------------
   for (let x = -160; x < END + 140; x += rand(22, 34)) {
