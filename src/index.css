@@ -8,15 +8,16 @@
   --nav-h: 3.5rem;
 }
 
-/* The journey's stage fills the tallest the viewport gets (phone browser bars
-   hidden), so the timeline strip is pinned to the true bottom of the screen and
-   runs behind the browser's toolbar while that is showing. */
+/* The journey's stage is exactly as tall as the visible viewport, tracking
+   phone browser bars as they show and hide (dvh). The fixed units both miss on
+   iPhone: svh leaves a gap under the strip once the bars collapse, and lvh
+   overshoots so the strip drops below the screen. */
 :root {
   --stage-h: 100vh;
 }
-@supports (height: 100lvh) {
+@supports (height: 100dvh) {
   :root {
-    --stage-h: 100lvh;
+    --stage-h: 100dvh;
   }
 }
 .journey-stage {

@@ -192,12 +192,20 @@ const Journey = () => {
   });
 
   const active = CHAPTERS[activeIndex];
-  // Measured against the tallest viewport (browser bars hidden), like the stage itself.
+  // Measured against the visible viewport, like the stage itself.
   const stripTop = `calc(var(--stage-h) * ${STRIP_RATIO})`;
 
   return (
-    <div ref={containerRef} className="relative bg-[#0a0a0f]" style={{ height: '900vh' }}>
-      <div className="journey-stage sticky top-0 w-full overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]">
+    <div ref={containerRef} className="relative overflow-clip bg-[#0a0a0f]" style={{ height: '900vh' }}>
+      <div className="journey-stage sticky top-0 w-full">
+        {/* Below the stage: the strip's bottom band carries on, so on phones it
+            shows behind the browser toolbar instead of a dark gap. */}
+        {webgl && (
+          <div className="pointer-events-none absolute inset-x-0 top-full h-40 bg-[#07070c] md:hidden">
+            <div className="h-full w-full" style={{ backgroundColor: getDietColor('animal'), opacity: 0.78 }} />
+          </div>
+        )}
+        <div className="absolute inset-0 overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]">
         {/* The walking world */}
         {webgl && <WorldScene progress={progressMV} onUnavailable={onUnavailable} />}
 
@@ -449,6 +457,7 @@ const Journey = () => {
             Seed oils and ultra-processed foods went from 0% to more than half
             our diet — in roughly the last 0.07% of human history.
           </p>
+        </div>
         </div>
       </div>
     </div>
