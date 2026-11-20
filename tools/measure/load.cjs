@@ -12,18 +12,19 @@ const url = process.argv[2] || 'https://www.human-diet.com/';
   const cdp = await ctx.newCDPSession(p);
   await cdp.send('Network.enable');
   await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 40, downloadThroughput: (10e6 / 8), uploadThroughput: (5e6 / 8) });
-  const urls = new Map(); let pending = 0, lastDone = 0;
+  const urls = new Map(); let lastDone = Date.now(), lastSeen = Date.now();
   const sum = { models: 0, modelBytes: 0, otherBytes: 0 };
-  cdp.on('Network.requestWillBeSent', (e) => { urls.set(e.requestId, e.request.url); pending++; });
-  const done = (e) => { pending--; lastDone = Date.now(); };
+  cdp.on('Network.requestWillBeSent', (e) => { urls.set(e.requestId, e.request.url); lastSeen = Date.now(); });
+  cdp.on('Network.dataReceived', () => { lastSeen = Date.now(); });
+  const done = () => { lastDone = lastSeen = Date.now(); };
   cdp.on('Network.loadingFinished', (e) => {
     const u = urls.get(e.requestId) || '';
     if (u.includes('/models/')) { sum.models++; sum.modelBytes += e.encodedDataLength; } else sum.otherBytes += e.encodedDataLength;
     done(e);
   });
   cdp.on('Network.loadingFailed', done);
-  // Wait until nothing has been in flight for 3 s.
-  const settle = async () => { for (;;) { await p.waitForTimeout(500); if (pending <= 0 && Date.now() - lastDone > 3000) return; } };
+  // Wait until the network has been silent for 4 s.
+  const settle = async () => { for (;;) { await p.waitForTimeout(500); if (Date.now() - lastSeen > 4000) return; } };
   const mb = (n) => (n / 1e6).toFixed(1) + ' MB';
   const t0 = Date.now();
   await p.goto(url, { waitUntil: 'domcontentloaded' });
