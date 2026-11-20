@@ -65,6 +65,7 @@ export const MODEL_IDS = [
   'hoe',
   'soda-cup',
   'hat',
+  'pylon',
   'wheat-row',
   'greens-row',
   'maize-row',

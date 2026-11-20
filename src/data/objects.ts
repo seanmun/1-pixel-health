@@ -155,7 +155,7 @@ export const WORLD_OBJECTS: WorldObject[] = [
   // ---- Energy ---------------------------------------------------------------------------------
   { id: 'windmill', name: 'Tower windmill', category: 'energy', era: '1185 – 1850', size: '3.5 base, 7 tall, sails 6.2 across', notes: 'Stone tower with a timber cap. The four sails are drawn in-engine and turn on the cap\'s axle.', status: 'done' },
   { id: 'coal-plant', name: 'Coal power station', category: 'energy', era: '1888 – today', size: 'Hall 8 × 5 × 4; stack 14 tall; two cooling towers 5 across, 8 tall', notes: 'Boiler hall, tall stack, two cooling towers, coal heap. Smoke and steam are added in-engine.', status: 'done' },
-  { id: 'pylon', name: 'Transmission pylon', category: 'energy', era: '1890 – today', size: '3.4 wide, 9 tall, every 16 m', notes: 'Lattice tower. Wires are drawn in-engine between pylons.', status: 'placeholder' },
+  { id: 'pylon', name: 'Transmission pylon', category: 'energy', era: '1890 – today', size: '5.2 wide, 11 tall, every 16 m', notes: 'Lattice tower with three cross-arms. Wires are drawn in-engine between pylons.', status: 'done' },
   { id: 'wind-turbine', name: 'Wind turbine', category: 'energy', era: '2004 – today', size: '12 tower, 10 rotor', notes: 'White tower and nacelle. The three blades are drawn in-engine and turn at the hub.', status: 'done' },
   { id: 'solar-array', name: 'Solar array', category: 'energy', era: '2010 – today', size: 'Row of four panels, 7.5 long', notes: 'Tilted ground-mount panels.', status: 'done' },
   { id: 'watermill', name: 'Watermill', category: 'energy', era: '0 – 1850', size: '5 × 4 × 5, wheel 3.5 across', notes: 'Water power for milling grain. Wheel as a separate turning part.', status: 'done' },

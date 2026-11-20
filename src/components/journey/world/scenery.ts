@@ -465,11 +465,16 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.cyl, '#b9bdc4', [0, 6, 0], [6.6, 12, 6.6]);
     P(g, G.cone, '#a4a9b0', [0, 13, 0], [6.8, 2, 6.8]);
   };
-  const pylon = (g: Group, wire: number) => {
-    for (const sz of [-0.6, 0.6]) P(g, G.box, '#7d8590', [0, 4.5, sz * 0.7], [0.14, 9, 0.14], [sz * 0.1, 0, 0]);
-    P(g, G.box, '#7d8590', [0, 7.4, 0], [0.14, 0.14, 3.4]);
-    P(g, G.box, '#7d8590', [0, 8.6, 0], [0.14, 0.14, 2.2]);
-    for (const z of [-1.5, 0, 1.5]) P(g, G.box, '#15161b', [wire / 2, z === 0 ? 8.5 : 7.3, z], [wire, 0.04, 0.04]);
+  /** Where the wires hang on the pylon model: [half-span, height] of each cross-arm. */
+  const PYLON_ARMS = [[1.88, 8.8], [2.54, 7.2], [2.29, 5.5]] as const;
+  const pylon = (g: Group) => {
+    for (const sz of [-0.6, 0.6]) P(g, G.box, '#7d8590', [0, 5.5, sz * 0.7], [0.14, 11, 0.14], [sz * 0.1, 0, 0]);
+    for (const [half, y] of PYLON_ARMS) P(g, G.box, '#7d8590', [0, y + 0.6, 0], [0.14, 0.14, half * 2]);
+  };
+  /** The wires from one pylon to the next; drawn here so they survive the model swap. */
+  const pylonWires = (g: Group, span: number) => {
+    for (const [half, y] of PYLON_ARMS)
+      for (const z of [-half, half]) P(g, G.box, '#15161b', [span / 2, y, z], [span, 0.04, 0.04]);
   };
   /** Coal power station: boiler hall, stack, cooling towers, coal heap. */
   const coalPlant = (g: Group) => {
@@ -689,7 +694,10 @@ export const buildScenery = (kit: Kit): Scenery => {
   for (const y of [1960, 1980, 1996, 2011.5]) place(xAtYear(y) + 5, -33, combine, { reach: 10, model: 'combine' });
 
   // ---- Power grid, skyline, renewables -------------------------------------
-  for (let x = xAtYear(1890); x < END; x += 16) place(x, -19.5, (g) => pylon(g, 16), { reach: 18 });
+  for (let x = xAtYear(1890); x < END; x += 16) {
+    place(x, -19.5, pylon, { reach: 18, model: 'pylon' });
+    place(x, -19.5, (g) => pylonWires(g, 16), { reach: 18 });
+  }
   const sky0 = xAtYear(1925);
   for (let x = sky0; x < END; x += rand(5, 9)) {
     const growth = Math.min(1, (x - sky0) / (WORLD_LEN - sky0));
