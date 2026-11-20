@@ -57,12 +57,14 @@ const paceLabel = (p: number): string => {
 };
 
 const STATS = [
-  { key: 'life', label: 'Life expectancy', hint: 'mean, from birth' },
-  { key: 'median', label: 'Median age at death', hint: 'half had died by' },
-  { key: 'height', label: 'Height', hint: 'adult male' },
-  { key: 'weight', label: 'Weight', hint: 'adult male' },
-  { key: 'energy', label: 'Energy per person', hint: 'all sources, per year' },
-  { key: 'infant', label: 'Infant deaths per 1,000', hint: 'before age 1' },
+  { key: 'life', short: 'Life exp.', label: 'Life expectancy', hint: 'average from birth' },
+  { key: 'infant', short: 'Infant /1,000', label: 'Infant deaths', hint: 'per 1,000, before age 1' },
+  { key: 'child', short: 'Died before 15', label: 'Died before 15', hint: 'of all children born' },
+  { key: 'adult', short: 'Adults to', label: 'Adults lived to', hint: 'if they reached 15' },
+  { key: 'median', short: 'Median death', label: 'Median death age', hint: 'half had died by' },
+  { key: 'height', short: 'Height', label: 'Height', hint: 'adult male' },
+  { key: 'weight', short: 'Weight', label: 'Weight', hint: 'adult male' },
+  { key: 'energy', short: 'Energy / yr', label: 'Energy per person', hint: 'all sources, per year' },
 ] as const;
 type StatKey = (typeof STATS)[number]['key'];
 
@@ -70,11 +72,35 @@ const statValues = (year: number): Record<StatKey, string> => {
   const v = vitalsAt(year);
   return {
     life: `${Math.round(v.lifeExpectancy)} yrs`,
+    infant: `${v.infantMortality < 10 ? v.infantMortality.toFixed(1) : Math.round(v.infantMortality)}`,
+    child: `${v.childMortality < 10 ? v.childMortality.toFixed(1) : Math.round(v.childMortality)}%`,
+    adult: `${Math.round(v.adultAgeAtDeath)} yrs`,
     median: `${Math.round(v.medianAgeAtDeath)} yrs`,
     height: `${Math.round(v.heightCm)} cm`,
     weight: `${Math.round(v.weightKg)} kg`,
     energy: `${(Math.round(v.energyKwh / 100) * 100).toLocaleString()} kWh`,
-    infant: `${v.infantMortality < 10 ? v.infantMortality.toFixed(1) : Math.round(v.infantMortality)}`,
+  };
+};
+
+/**
+ * What the lifespan numbers mean in each era. A low life expectancy never
+ * meant adults died at 30: it is an average dragged down by child deaths.
+ */
+const lifespanNote = (year: number): { full: string; short: string } => {
+  const { childMortality } = vitalsAt(year);
+  if (childMortality >= 40)
+    return {
+      full: 'Not old age at 30. Cold, famine, injury, violence and infection, with no medicine to fight them, killed about half of all children. Those who reached 15 lived to 53 on average, and it was not unusual to reach 70.',
+      short: 'Not old age at 30: about half of all children died. Adults often reached their 60s and 70s.',
+    };
+  if (childMortality >= 8)
+    return {
+      full: 'Life expectancy is still held down by children dying, not by adults dying young. Those who reached 15 could expect to live to around 60.',
+      short: 'Held down by child deaths: those who reached 15 lived to about 60.',
+    };
+  return {
+    full: 'Fewer than 1 in 10 children now die before 15, against about half for most of history. Adults gained too, but most of the rise in life expectancy is children surviving.',
+    short: 'Children surviving is most of the rise; adults gained too.',
   };
 };
 
@@ -84,6 +110,8 @@ const Journey = () => {
   // Imperatively-updated DOM (no per-frame React renders).
   const yearRef = useRef<HTMLSpanElement>(null);
   const paceRef = useRef<HTMLSpanElement>(null);
+  const noteRef = useRef<HTMLParagraphElement>(null);
+  const noteShortRef = useRef<HTMLParagraphElement>(null);
   const statRefs = useRef<Partial<Record<StatKey, HTMLSpanElement | null>>>({});
   const leftAxisRef = useRef<HTMLSpanElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
@@ -141,6 +169,10 @@ const Journey = () => {
     if (yearRef.current) yearRef.current.textContent = formatYear(focus);
     if (paceRef.current) paceRef.current.textContent = paceLabel(p);
     const values = statValues(focus);
+    const note = lifespanNote(focus);
+    if (noteRef.current && noteRef.current.textContent !== note.full) noteRef.current.textContent = note.full;
+    if (noteShortRef.current && noteShortRef.current.textContent !== note.short)
+      noteShortRef.current.textContent = note.short;
     for (const s of STATS) {
       const el = statRefs.current[s.key];
       if (el) el.textContent = values[s.key];
@@ -244,14 +276,14 @@ const Journey = () => {
 
         {/* Live HUD — sits below the nav + top legend (hidden during intro) */}
         <div
-          className={`absolute left-4 right-4 top-[5.75rem] z-20 transition-opacity duration-500 md:left-10 md:right-auto md:top-28 ${
+          className={`under-nav-hud absolute left-4 right-4 z-20 md:left-10 md:right-auto ${
             phase === 'intro' ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45 md:text-[11px]">
+          <div className="hidden text-[11px] font-semibold uppercase tracking-[0.25em] text-white/45 md:block">
             You are in
           </div>
-          <div className="mt-0.5 flex items-baseline gap-3">
+          <div className="flex items-baseline gap-3 md:mt-0.5">
             <span
               ref={yearRef}
               className="font-mono text-2xl font-bold tabular-nums text-white md:text-4xl"
@@ -265,13 +297,14 @@ const Journey = () => {
               {paceLabel(0)}
             </span>
           </div>
-          <dl className="mt-3 grid grid-cols-3 gap-x-4 gap-y-2 md:w-[420px] md:gap-x-6 md:gap-y-3">
+          <dl className="mt-1 grid grid-cols-4 gap-x-2 gap-y-1 md:mt-3 md:w-[600px] md:gap-x-6 md:gap-y-2">
             {STATS.map((s) => (
               <div key={s.key}>
-                <dt className="text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-white/45 md:text-[10px]">
-                  {s.label}
+                <dt className="whitespace-nowrap text-[8px] font-semibold uppercase leading-tight tracking-[0.08em] text-white/45 md:text-[10px] md:tracking-[0.12em]">
+                  <span className="md:hidden">{s.short}</span>
+                  <span className="hidden md:inline">{s.label}</span>
                 </dt>
-                <dd className="mt-0.5 font-mono text-sm font-bold tabular-nums text-white md:text-lg">
+                <dd className="whitespace-nowrap font-mono text-xs font-bold tabular-nums text-white md:mt-0.5 md:text-lg">
                   <span
                     ref={(el) => {
                       statRefs.current[s.key] = el;
@@ -284,6 +317,12 @@ const Journey = () => {
               </div>
             ))}
           </dl>
+<p ref={noteShortRef} className="mt-1 text-[10px] leading-snug text-white/60 md:hidden">
+            {lifespanNote(yearAtProgress(0)).short}
+          </p>
+          <p ref={noteRef} className="mt-2 hidden max-w-[600px] text-xs leading-snug text-white/60 md:block">
+            {lifespanNote(yearAtProgress(0)).full}
+          </p>
         </div>
 
         {/* Intro hero */}
@@ -331,7 +370,7 @@ const Journey = () => {
         {/* Active chapter card (single keyed node — never stalls or stacks) */}
         {phase === 'reveal' && active && (
           <div
-            className="absolute left-1/2 z-20 w-[min(94%,540px)] -translate-x-1/2 px-1 md:bottom-auto md:left-10 md:top-[calc(50%+4.25rem)] md:w-[420px] md:translate-x-0 md:-translate-y-1/2"
+            className="absolute left-1/2 z-20 w-[min(94%,540px)] -translate-x-1/2 px-1 md:bottom-auto md:left-10 md:top-[calc(50%+5rem)] md:w-[420px] md:translate-x-0 md:-translate-y-1/2"
             style={{ bottom: `calc(${stripTop} + 1.75rem)` }}
           >
             <motion.div
@@ -377,7 +416,7 @@ const Journey = () => {
         {/* Legend — pinned to the top under the nav. One swipeable row on
             mobile; wrapped and centered on desktop. (hidden during intro) */}
         <div
-          className={`no-scrollbar absolute left-1/2 top-[3.5rem] z-30 flex w-[94%] max-w-[94%] -translate-x-1/2 flex-nowrap items-center justify-start gap-x-3 gap-y-1 overflow-x-auto md:w-auto md:flex-wrap md:justify-center md:overflow-visible transition-opacity duration-500 ${
+          className={`no-scrollbar under-nav-legend absolute left-1/2 z-30 flex w-[94%] max-w-[94%] -translate-x-1/2 flex-nowrap items-center justify-start gap-x-3 gap-y-1 overflow-x-auto md:w-auto md:flex-wrap md:justify-center md:overflow-visible ${
             phase === 'intro' ? 'opacity-0' : 'opacity-100'
           }`}
         >

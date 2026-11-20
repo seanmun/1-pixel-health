@@ -4,6 +4,23 @@
 
 :root {
   color-scheme: dark;
+  /* Height the fixed nav is taking; 0 while it is tucked away on phones (App.tsx). */
+  --nav-h: 3.5rem;
+}
+
+/* Journey panels pinned under the nav: they slide up when the nav hides. */
+.under-nav-legend {
+  top: max(var(--nav-h), 0.5rem);
+  transition: top 0.3s ease, opacity 0.5s ease;
+}
+.under-nav-hud {
+  top: calc(max(var(--nav-h), 0.5rem) + 1.5rem);
+  transition: top 0.3s ease, opacity 0.5s ease;
+}
+@media (min-width: 768px) {
+  .under-nav-hud {
+    top: 7rem;
+  }
 }
 
 /* Hide scrollbars on the horizontally-scrollable mobile legend */

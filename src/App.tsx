@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Journey from './components/journey/Journey';
 import Sources from './components/Sources';
 import Categories from './components/Categories';
@@ -17,10 +17,45 @@ const NAV: { id: View; label: string }[] = [
 function App() {
   const [view, setView] = useState<View>('journey');
 
+  // On phones the nav gets out of the way while the reader walks forward
+  // through the journey, drops back in as soon as they scroll back, and is
+  // always there at the start and the end. `--nav-h` tells the journey how
+  // much room the nav is taking so its top-pinned panels can move up.
+  const [navHidden, setNavHidden] = useState(false);
+  useEffect(() => {
+    const phone = window.matchMedia('(max-width: 767px)');
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const vh = window.innerHeight;
+      const footer = document.querySelector('footer')?.offsetHeight ?? 0;
+      const end = document.documentElement.scrollHeight - vh - footer;
+      const atEdge = y < vh * 0.6 || y > end - vh * 0.7;
+      if (view !== 'journey' || !phone.matches || atEdge) setNavHidden(false);
+      else if (y > last + 4) setNavHidden(true);
+      else if (y < last - 4) setNavHidden(false);
+      last = y;
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    phone.addEventListener('change', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      phone.removeEventListener('change', onScroll);
+    };
+  }, [view]);
+  useEffect(() => {
+    document.documentElement.style.setProperty('--nav-h', navHidden ? '0rem' : '3.5rem');
+  }, [navHidden]);
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Fixed glass nav */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#0a0a0f]/70 backdrop-blur-md">
+      <nav
+        className={`fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#0a0a0f]/70 backdrop-blur-md transition-transform duration-300 ${
+          navHidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-6">
           <button
             onClick={() => setView('journey')}
