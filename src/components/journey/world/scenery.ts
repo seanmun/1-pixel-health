@@ -3,6 +3,7 @@ import { Kit, mulberry32 } from './kit';
 import { progressAtYear, yearAtProgress } from '../../../utils/timeScale';
 import { iceAt } from '../../../data/vitals';
 import { ModelId } from './models';
+import { CROPS, CropField, CropKind } from './crops';
 
 /** Length of the whole walk in world units (metres, roughly). */
 export const WORLD_LEN = 1000;
@@ -30,6 +31,8 @@ export interface Scenery {
   spinners: { obj: Object3D; speed: number; x: number }[];
   /** Placeholders that a finished model replaces once it has loaded. */
   slots: { id: ModelId; obj: Group }[];
+  /** Fields to plant with crop-row models once those have loaded. */
+  crops: CropField[];
 }
 
 const SEED_OIL = '#8B3DE4';
@@ -51,6 +54,7 @@ export const buildScenery = (kit: Kit): Scenery => {
   const spinners: Scenery['spinners'] = [];
   const markers: { obj: Object3D; kind: EmitterKind }[] = [];
   const slots: Scenery['slots'] = [];
+  const crops: CropField[] = [];
 
   const place = (
     x: number,
@@ -121,9 +125,11 @@ export const buildScenery = (kit: Kit): Scenery => {
     P(g, G.cone, '#2c3148', [0, h / 2, 0], [w, h, w]);
     if (snowy) P(g, G.cone, '#dfe8f2', [0, h * 0.79, 0], [w * 0.44, h * 0.44, w * 0.44]);
   };
-  const field = (g: Group, len: number, depth: number, n: number, crop: string, h: number) => {
+  /** Soil with drawn stand-in rows; the real plants are set out once the crop models load. */
+  const field = (g: Group, len: number, depth: number, n: number, kind: CropKind, h: number) => {
     P(g, G.box, '#4d3b28', [0, 0.04, 0], [len, 0.08, depth]);
-    P(g, rowsGeo(n), crop, [0, 0.08, 0], [len, h, depth]);
+    const rows = P(g, rowsGeo(n), CROPS[kind].color, [0, 0.08, 0], [len, h, depth]);
+    crops.push({ obj: g, rows, kind, len, depth, low: h < 0.3 });
   };
 
   // ---- Animals -----------------------------------------------------------
@@ -532,8 +538,8 @@ export const buildScenery = (kit: Kit): Scenery => {
   const farmstead = (x: number, o: { huts: number; bake: boolean; herd: 'sheep' | 'cow' | null }) => {
     reserve(x - 10, x + 10);
     for (let i = 0; i < o.huts; i++) place(x - 7 + i * 4.2, NEAR - 3 - (i % 2) * 2.5, mudHut, { model: 'mud-hut', rotY: rand(-0.5, 0.5) });
-    place(x + 4.5, NEAR + 1.2, (g) => field(g, 5, 3.2, 5, '#d2b55a', 0.5));
-    place(x + 4.5, NEAR - 3, (g) => field(g, 5, 3.2, 5, '#7da348', 0.35));
+    place(x + 4.5, NEAR + 1.2, (g) => field(g, 5, 3.2, 5, 'wheat', 0.5));
+    place(x + 4.5, NEAR - 3, (g) => field(g, 5, 3.2, 5, 'greens', 0.35));
     place(x - 3.5, NEAR + 2.4, sheaves, { model: 'grain-sheaves', rotY: rng() * 6 });
     place(x - 2.2, NEAR + 3.0, sheaves, { model: 'grain-sheaves', rotY: rng() * 6, scale: 0.85 });
     place(x - 1.6, NEAR + 2.9, quern, { model: 'quern', rotY: rand(-0.5, 0.5) });
@@ -569,7 +575,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     }
     placeOven(x + 3, NEAR + 1.6);
     place(x - 7, NEAR + 2.6, pots, { model: 'ferment-jars', rotY: rng() * 6 });
-    place(x + 7.5, NEAR + 1.8, (g) => field(g, 6, 3, 5, '#d2b55a', 0.55));
+    place(x + 7.5, NEAR + 1.8, (g) => field(g, 6, 3, 5, 'wheat', 0.55));
     for (let i = 0; i < 2; i++) placeCow(x - 9.6 + i * 1.6, NEAR + 1.2 - i);
     place(x - 12, NEAR + 1.4, smokehouse, { model: 'smokehouse', rotY: 0.3 });
     for (const dx of [6.15, 8.85]) place(x + dx, NEAR + 0.2, fence, { model: 'fence' });
@@ -600,7 +606,7 @@ export const buildScenery = (kit: Kit): Scenery => {
     reserve(x - 9, x + 9);
     place(x - 4, NEAR - 4, barn, { model: 'barn' });
     placeWindmill(x + 5, NEAR - 3);
-    place(x + 1.5, NEAR + 1.6, (g) => field(g, 7, 3.4, 6, '#6f9a3a', 0.9)); // maize
+    place(x + 1.5, NEAR + 1.6, (g) => field(g, 7, 3.4, 6, 'maize', 0.9));
     for (let i = 0; i < 3; i++) placeCow(x - 7 + i * 1.5, NEAR + 1.5 + (i % 2));
   }
 
@@ -666,7 +672,7 @@ export const buildScenery = (kit: Kit): Scenery => {
   const END = WORLD_LEN + 70;
   const mono0 = xAtYear(1900);
   for (let x = mono0, i = 0; x < END; x += 24, i++) {
-    const crop = Math.floor(i / 3) % 2 === 0 ? '#c9a93f' : '#6f9a3a'; // corn / soy
+    const crop: CropKind = Math.floor(i / 3) % 2 === 0 ? 'corn' : 'soy';
     place(x + 12, -39, (g) => field(g, 23.4, 44, 14, crop, 0.7), { reach: 16 });
     place(x + 12, 18, (g) => field(g, 23.4, 24, 12, crop, 0.22), { reach: 16 });
     if (!isReserved(x, x + 24)) place(x + 12, -10.5, (g) => field(g, 23.4, 11, 4, crop, 0.6), { reach: 16 });
@@ -752,7 +758,7 @@ export const buildScenery = (kit: Kit): Scenery => {
       // Farmland steadily replaces woodland; fields get larger after 1800.
       const f = Math.min(1, (x - FARM0) / (IND0 - FARM0));
       const big = x >= IND0;
-      const crop = pick(['#d2b55a', '#7da348', '#c4a84f']);
+      const crop = pick<CropKind>(['wheat', 'greens', 'wheat']);
       if (nearFree) {
         if (r < 0.22 * (1 - f * 0.6)) place(jx, nearZ, leafy, { model: 'broadleaf-tree', rotY: rng() * 6, scale: rand(0.6, 0.9) });
         else if (r < 0.2 + f * 0.3) place(jx, nearZ, (g) => field(g, big ? 6 : rand(3, 5), big ? 5 : rand(2.4, 3.6), big ? 7 : 4, crop, 0.45));
@@ -781,5 +787,5 @@ export const buildScenery = (kit: Kit): Scenery => {
     seed: (i * 0.618) % 1,
   }));
 
-  return { group, items, emitters, flames, spinners, slots };
+  return { group, items, emitters, flames, spinners, slots, crops };
 };

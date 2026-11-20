@@ -65,6 +65,14 @@ export const MODEL_IDS = [
   'hoe',
   'soda-cup',
   'hat',
+  'wheat-row',
+  'greens-row',
+  'maize-row',
+  'soy-row',
+  'wheat-row-far',
+  'greens-row-far',
+  'maize-row-far',
+  'soy-row-far',
 ] as const;
 export type ModelId = (typeof MODEL_IDS)[number];
 
@@ -114,23 +122,62 @@ export const prepare = (root: Object3D) => {
 };
 
 /**
- * Loads every finished model. Resolves to whichever ones exist; a missing or
+ * Address of a model file. The `v` is a fingerprint of the file's contents
+ * (worked out at build time in vite.config.ts), so the server can tell browsers
+ * to keep each model for a year and a changed model still arrives at once.
+ */
+const modelUrl = (path: string) => {
+  const v = __MODEL_HASHES__[path];
+  return `${import.meta.env.BASE_URL}models/${path}${v ? `?v=${v}` : ''}`;
+};
+
+/**
+ * Fetches finished models on demand, as the walk reaches the stretch of
+ * road that uses them. `request` is safe to call repeatedly; a missing or
  * broken file is skipped so its placeholder simply stays.
  */
-export const loadModels = async (): Promise<Partial<Record<ModelId, Object3D>>> => {
+export const createModelLoader = (onLoad: (id: ModelId, model: Object3D) => void) => {
   const loader = new GLTFLoader();
-  const out: Partial<Record<ModelId, Object3D>> = {};
-  await Promise.all(
-    MODEL_IDS.map(async (id) => {
-      try {
-        const gltf = await loader.loadAsync(`${import.meta.env.BASE_URL}models/${id}.glb`);
-        out[id] = prepare(gltf.scene);
-      } catch {
+  const asked = new Set<ModelId>();
+  const models: Partial<Record<ModelId, Object3D>> = {};
+  let stopped = false;
+  // A few at a time, in the order asked, so what is nearest arrives first
+  // instead of everything sharing the connection.
+  const queue: ModelId[] = [];
+  let busy = 0;
+  const next = () => {
+    if (stopped || busy >= 4) return;
+    const id = queue.shift();
+    if (!id) return;
+    busy++;
+    loader
+      .loadAsync(modelUrl(`${id}.glb`))
+      .then((gltf) => {
+        const model = prepare(gltf.scene);
+        if (stopped) return disposeModels({ [id]: model });
+        models[id] = model;
+        onLoad(id, model);
+      })
+      .catch(() => {
         /* keep the placeholder */
-      }
-    })
-  );
-  return out;
+      })
+      .finally(() => {
+        busy--;
+        next();
+      });
+    next();
+  };
+  const request = (id: ModelId) => {
+    if (asked.has(id)) return;
+    asked.add(id);
+    queue.push(id);
+    next();
+  };
+  const dispose = () => {
+    stopped = true;
+    disposeModels(models);
+  };
+  return { request, models, dispose };
 };
 
 /** The three walkers, each with one rigged, walking model per era outfit. */
@@ -139,21 +186,28 @@ export type WalkerId = (typeof WALKERS)[number];
 export const OUTFIT_COUNT = 6;
 
 /**
- * Loads the rigged walkers (public/models/walkers/<who>-<outfit>.glb), handing
- * each to `onLoad` as it arrives so the figures can dress one outfit at a time.
+ * Fetches the rigged walkers (public/models/walkers/<who>-<outfit>.glb) one
+ * outfit at a time: `request(outfit)` brings in all three walkers dressed for
+ * that era, handing each to `onLoad` as it arrives.
  */
-export const loadWalkers = (onLoad: (who: WalkerId, outfit: number, rig: Object3D, walk: AnimationClip) => void) => {
+export const createWalkerLoader = (
+  onLoad: (who: WalkerId, outfit: number, rig: Object3D, walk: AnimationClip) => void
+) => {
   const loader = new GLTFLoader();
-  for (const who of WALKERS)
-    for (let i = 0; i < OUTFIT_COUNT; i++)
+  const asked = new Set<number>();
+  return (outfit: number) => {
+    if (outfit < 0 || outfit >= OUTFIT_COUNT || asked.has(outfit)) return;
+    asked.add(outfit);
+    for (const who of WALKERS)
       loader
-        .loadAsync(`${import.meta.env.BASE_URL}models/walkers/${who}-${i + 1}.glb`)
+        .loadAsync(modelUrl(`walkers/${who}-${outfit + 1}.glb`))
         .then((gltf) => {
-          if (gltf.animations[0]) onLoad(who, i, prepare(gltf.scene), gltf.animations[0]);
+          if (gltf.animations[0]) onLoad(who, outfit, prepare(gltf.scene), gltf.animations[0]);
         })
         .catch(() => {
           /* keep the drawn figure */
         });
+  };
 };
 
 /** Swap a placeholder group's contents for a clone of the finished model. */

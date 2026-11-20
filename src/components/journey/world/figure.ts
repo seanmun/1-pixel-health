@@ -41,6 +41,13 @@ const OUTFITS: Outfit[] = [
   // T-shirt, jeans, sneakers — and a soda.
   { year: 1955, top: '#3d7fc4', arms: SKIN, legs: '#34507a', feet: '#f0f0f0', item: 'cup', hat: false },
 ];
+
+/** Which outfit (0-based) is worn in a given year. */
+export const outfitIndexAt = (year: number) => {
+  let i = 0;
+  while (i < OUTFITS.length - 1 && OUTFITS[i + 1].year <= year) i++;
+  return i;
+};
 // Each outfit fades in over this many years before its keyframe.
 const BLEND: Record<number, number> = { [-45000]: 25000, [-9000]: 1500, [-500]: 600, 1800: 60, 1955: 15 };
 

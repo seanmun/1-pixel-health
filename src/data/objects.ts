@@ -132,9 +132,9 @@ export const WORLD_OBJECTS: WorldObject[] = [
   { id: 'skyscraper', name: 'City tower', category: 'shelter', era: '1925 – today (far background)', size: '4–7 square, 6–36 tall', notes: 'Distant skyline; lit windows. 3–4 variants of increasing height.', status: 'done' },
 
   // ---- Farms & fields -----------------------------------------------------------------
-  { id: 'field-plot', name: 'Hand-worked field plot', category: 'farms', era: '10,000 BCE – 1800', size: '3–7 long, 2.5–4 deep', notes: 'Small irregular plot with visible rows.', variants: ['Wheat (gold)', 'Greens / legumes'], status: 'placeholder' },
-  { id: 'maize-field', name: 'Maize field', category: 'farms', era: '1650 – 1900', size: '7 × 3.4, plants 0.9–2 tall', notes: 'New World crop after the Columbian Exchange.', status: 'placeholder' },
-  { id: 'monocrop-field', name: 'Monocrop field block', category: 'farms', era: '1900 – today', size: '24 long × 11–44 deep (tiles end to end)', notes: 'Perfectly uniform rows to the horizon. Must tile seamlessly along its length.', variants: ['Corn', 'Soy'], status: 'placeholder' },
+  { id: 'field-plot', name: 'Hand-worked field plot', category: 'farms', era: '10,000 BCE – 1800', size: '3–7 long, 2.5–4 deep', notes: 'Small plot with visible rows. Built from a short crop-row model (public/models/wheat-row.glb, greens-row.glb) repeated along each furrow; distant rows use the flat-card version (-far).', variants: ['Wheat (gold)', 'Greens / legumes'], status: 'done' },
+  { id: 'maize-field', name: 'Maize field', category: 'farms', era: '1650 – 1900', size: '7 × 3.4, plants 0.9–2 tall', notes: 'New World crop after the Columbian Exchange. Rows of public/models/maize-row.glb.', status: 'done' },
+  { id: 'monocrop-field', name: 'Monocrop field block', category: 'farms', era: '1900 – today', size: '24 long × 11–44 deep (tiles end to end)', notes: 'Perfectly uniform rows to the horizon. Maize and soy row models by the road, flat-card versions (maize-row-far.glb, soy-row-far.glb) beyond.', variants: ['Corn', 'Soy'], status: 'done' },
   { id: 'fence', name: 'Field fence / dry-stone wall', category: 'farms', era: '5,000 BCE – 1900', size: '3 long sections', notes: 'Separates the small plots; disappears in the monocrop era.', status: 'done' },
   { id: 'grain-silo', name: 'Grain silo / elevator', category: 'farms', era: '1900 – today', size: '6 across, 20 tall', notes: 'Industrial-scale grain storage.', status: 'done' },
 

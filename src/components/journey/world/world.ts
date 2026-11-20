@@ -12,7 +12,6 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
-  Object3D,
   PCFSoftShadowMap,
   PerspectiveCamera,
   Points,
@@ -23,9 +22,10 @@ import {
   WebGLRenderer,
 } from 'three';
 import { createKit } from './kit';
-import { createFigure } from './figure';
-import { buildScenery, ROAD_HALF, WORLD_LEN, yearAtX } from './scenery';
-import { disposeModels, loadModels, loadWalkers, ModelId, snowUniform, swapIn, WALKERS } from './models';
+import { createFigure, outfitIndexAt } from './figure';
+import { buildScenery, ROAD_HALF, WORLD_LEN, xAtYear, yearAtX } from './scenery';
+import { CROPS, plantField } from './crops';
+import { createModelLoader, createWalkerLoader, ModelId, snowUniform, swapIn, WALKERS } from './models';
 import { progressAtYear } from '../../../utils/timeScale';
 import { getDietData, getDietColor } from '../../../utils/dietUtils';
 import { iceAt } from '../../../data/vitals';
@@ -53,6 +53,9 @@ const GROUND_NEAR = 45;
 
 const VIEW_BEHIND = 60; // props are shown within [x - VIEW_BEHIND, x + VIEW_AHEAD]
 const VIEW_AHEAD = 95;
+// Models are fetched a little before they can be seen (the widest prop reaches 40).
+const LOAD_BEHIND = VIEW_BEHIND + 45;
+const LOAD_AHEAD = VIEW_AHEAD + 60;
 
 const SNOWFLAKES = 900;
 const MAX_PUFFS = 320;
@@ -219,21 +222,50 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   const scenery = buildScenery(kit);
   scene.add(scenery.group);
 
-  // Finished models replace their low-poly placeholders as they arrive.
-  let models: Partial<Record<ModelId, Object3D>> = {};
+  // Finished models replace their low-poly placeholders. Each is fetched only
+  // when the walk comes within reach of somewhere it is used, so the page opens
+  // on a few megabytes instead of the whole 300,000 years.
   let disposed = false;
-  loadModels().then((loaded) => {
-    if (disposed) return disposeModels(loaded);
-    models = loaded;
-    for (const slot of scenery.slots) {
-      const model = loaded[slot.id];
-      if (model) swapIn(slot.obj, model);
+  const planted: InstancedMesh[] = [];
+  const unplanted = new Set(scenery.crops.map((_, i) => i));
+  const slotsById = new Map<ModelId, Group[]>();
+  /** Where along the road each model is used. */
+  const uses = new Map<ModelId, number[]>();
+  const use = (id: ModelId, x: number) => {
+    const xs = uses.get(id);
+    if (xs) xs.push(x);
+    else uses.set(id, [x]);
+  };
+  for (const slot of scenery.slots) {
+    use(slot.id, slot.obj.position.x);
+    const list = slotsById.get(slot.id);
+    if (list) list.push(slot.obj);
+    else slotsById.set(slot.id, [slot.obj]);
+  }
+  for (const field of scenery.crops) {
+    use(CROPS[field.kind].model, field.obj.position.x);
+    use(CROPS[field.kind].far, field.obj.position.x);
+  }
+  for (let x = xAtYear(1945); x < WORLD_LEN + 50; x += 50) use('crop-duster', x);
+  for (let x = xAtYear(1800); x < WORLD_LEN + 50; x += 50) use('hat', x);
+  for (let x = xAtYear(1955); x < WORLD_LEN + 50; x += 50) use('soda-cup', x);
+  const CARRIED = { spear: 'spear', hoe: 'hoe', 'soda-cup': 'cup', hat: 'hat' } as const;
+
+  const loader = createModelLoader((id, model) => {
+    for (const slot of slotsById.get(id) ?? []) swapIn(slot, model);
+    if (id === 'crop-duster') swapIn(plane, model);
+    if (id in CARRIED) for (const f of family) f.fig.equip({ [CARRIED[id as keyof typeof CARRIED]]: model });
+    for (const i of unplanted) {
+      const spec = CROPS[scenery.crops[i].kind];
+      if (!loader.models[spec.model] || !loader.models[spec.far]) continue;
+      planted.push(...plantField(scenery.crops[i], loader.models, i));
+      unplanted.delete(i);
     }
-    if (loaded['crop-duster']) swapIn(plane, loaded['crop-duster']);
-    for (const f of family)
-      f.fig.equip({ spear: loaded.spear, hoe: loaded.hoe, cup: loaded['soda-cup'], hat: loaded.hat });
     dirty = true;
   });
+  // The spear and hoe are tiny and carried from the first step; the hat and cup
+  // come with the stretch of road where they first appear.
+  for (const id of ['spear', 'hoe'] as ModelId[]) loader.request(id);
 
   // ---- Walkers ------------------------------------------------------------------
   const family = [
@@ -243,7 +275,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   ];
   family.forEach((f) => scene.add(f.fig.root));
   // The rigged walkers arrive one outfit at a time and replace the drawn figures.
-  loadWalkers((who, outfit, rig, walk) => {
+  const requestOutfit = createWalkerLoader((who, outfit, rig, walk) => {
     if (disposed) return;
     family[WALKERS.indexOf(who)].fig.setRig(outfit, rig, walk);
     dirty = true;
@@ -337,9 +369,32 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
 
+  /** Ask for whatever is used near the walker and has not been fetched yet. */
+  let loadCell = NaN;
+  const loadNearby = (wx: number, year: number) => {
+    const cell = Math.floor(wx / 5);
+    if (cell === loadCell) return;
+    loadCell = cell;
+    const due: { id: ModelId; gap: number }[] = [];
+    for (const [id, xs] of uses) {
+      let gap = Infinity;
+      for (const x of xs) if (x > wx - LOAD_BEHIND && x < wx + LOAD_AHEAD) gap = Math.min(gap, Math.abs(x - wx));
+      if (gap === Infinity) continue;
+      due.push({ id, gap });
+      uses.delete(id);
+    }
+    // Nearest first, so what is on screen fills in before what is still ahead.
+    due.sort((a, b) => a.gap - b.gap).forEach((d) => loader.request(d.id));
+    // The outfit worn now, and the next one so the change of clothes is ready.
+    const outfit = outfitIndexAt(year);
+    requestOutfit(outfit);
+    requestOutfit(outfit + 1);
+  };
+
   const update = (time: number) => {
     const wx = shown * WORLD_LEN;
     const year = yearAtX(wx);
+    loadNearby(wx, year);
     const ice = iceAt(year);
 
     // Camera: side-on tracking shot, looking a little ahead down the road.
@@ -481,7 +536,8 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     },
     dispose: () => {
       disposed = true;
-      disposeModels(models);
+      planted.forEach((p) => p.dispose());
+      loader.dispose();
       cancelAnimationFrame(raf);
       ro.disconnect();
       family.forEach((f) => f.fig.dispose());
