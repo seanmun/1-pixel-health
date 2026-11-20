@@ -12,6 +12,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
+  PCFShadowMap,
   PCFSoftShadowMap,
   PerspectiveCamera,
   Points,
@@ -98,6 +99,12 @@ const sampleColor = (keys: ReturnType<typeof prepare>, year: number, out: Color)
 const fract = (x: number) => x - Math.floor(x);
 const hash = (n: number) => fract(Math.sin(n * 127.1) * 43758.5453);
 
+/** How long after the last movement the picture drops to idle speed, and the gap between idle frames (ms). */
+const IDLE_AFTER = 600;
+const IDLE_FRAME = 45;
+/** A walking frame slower than this (ms, about 36 a second) counts against the device. */
+const SLOW_FRAME = 28;
+
 export interface World {
   /** Journey progress in [0,1]. The walkers ease toward it. */
   setProgress: (p: number) => void;
@@ -110,8 +117,12 @@ export interface World {
 export const createWorld = (canvas: HTMLCanvasElement): World => {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Phones get a cheaper picture: fewer pixels and plainer shadow edges. On a
+  // small screen the difference is hard to see; in heat and battery it is not.
+  const phone = window.matchMedia('(pointer: coarse)').matches && Math.min(window.innerWidth, window.innerHeight) < 700;
+  let maxRatio = phone ? 1.5 : 2;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.shadowMap.type = phone ? PCFShadowMap : PCFSoftShadowMap;
 
   const kit = createKit();
   const scene = new Scene();
@@ -128,7 +139,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   // The sun casts shadows inside a box that travels with the walkers.
   const SUN_DIR = [-0.5, 1, 0.8] as const;
   sun.castShadow = true;
-  sun.shadow.mapSize.setScalar(window.innerWidth < 700 ? 1024 : 2048);
+  sun.shadow.mapSize.setScalar(phone || window.innerWidth < 700 ? 1024 : 2048);
   sun.shadow.camera.left = -55;
   sun.shadow.camera.right = 55;
   sun.shadow.camera.top = 45;
@@ -355,12 +366,16 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   let clock = 0;
   let raf = 0;
   let first = true;
+  let stillSince = 0;
+  let drawn = 0;
+  let run = 0;
+  let slow = 0;
 
   const resize = () => {
     width = canvas.clientWidth;
     height = canvas.clientHeight;
     if (width === 0 || height === 0) return;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRatio));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     dirty = true;
@@ -368,6 +383,13 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   resize();
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
+  // Nothing is drawn while the canvas is scrolled out of sight.
+  let onScreen = true;
+  const io = new IntersectionObserver((entries) => {
+    onScreen = entries[entries.length - 1].isIntersecting;
+    dirty = true;
+  });
+  io.observe(canvas);
 
   /** Ask for whatever is used near the walker and has not been fetched yet. */
   let loadCell = NaN;
@@ -521,8 +543,26 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     const moving = Math.abs(d) > 1e-6;
     first = false;
 
-    if (width === 0 || height === 0) return;
+    if (width === 0 || height === 0 || !onScreen) return;
     if (reduceMotion && !moving && !dirty) return;
+    // Standing still, only smoke, snow and flames move: a third of the frames
+    // is plenty for those, and lets the device cool between scrolls.
+    if (moving || dirty) stillSince = now;
+    else if (now - stillSince > IDLE_AFTER && now - drawn < IDLE_FRAME) return;
+    // A device that cannot keep up while walking gets fewer pixels, a step at
+    // a time. Counted over a long run so a model arriving does not trigger it.
+    if (moving) {
+      run++;
+      if (now - drawn > SLOW_FRAME) slow++;
+      if (run >= 120) {
+        if (slow > 72 && maxRatio > 1) {
+          maxRatio = Math.max(1, maxRatio - 0.25);
+          resize();
+        }
+        run = slow = 0;
+      }
+    }
+    drawn = now;
     dirty = false;
     update(clock);
     renderer.render(scene, camera);
@@ -540,6 +580,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
       loader.dispose();
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
       family.forEach((f) => f.fig.dispose());
       groundGeo.dispose();
       groundMat.dispose();
