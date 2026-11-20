@@ -1,4 +1,5 @@
 import { AnimationClip, Group, Mesh, MeshStandardMaterial, Object3D } from 'three';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /**
@@ -123,6 +124,16 @@ export const prepare = (root: Object3D) => {
 };
 
 /**
+ * The models' mesh data is Draco-compressed (tools/blender/compress.py); the
+ * decoder lives in public/draco and is fetched once, with the first model.
+ */
+let draco: DRACOLoader | null = null;
+const newLoader = () => {
+  draco ??= new DRACOLoader().setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
+  return new GLTFLoader().setDRACOLoader(draco);
+};
+
+/**
  * Address of a model file. The `v` is a fingerprint of the file's contents
  * (worked out at build time in vite.config.ts), so the server can tell browsers
  * to keep each model for a year and a changed model still arrives at once.
@@ -138,7 +149,7 @@ const modelUrl = (path: string) => {
  * broken file is skipped so its placeholder simply stays.
  */
 export const createModelLoader = (onLoad: (id: ModelId, model: Object3D) => void) => {
-  const loader = new GLTFLoader();
+  const loader = newLoader();
   const asked = new Set<ModelId>();
   const models: Partial<Record<ModelId, Object3D>> = {};
   let stopped = false;
@@ -194,7 +205,7 @@ export const OUTFIT_COUNT = 6;
 export const createWalkerLoader = (
   onLoad: (who: WalkerId, outfit: number, rig: Object3D, walk: AnimationClip) => void
 ) => {
-  const loader = new GLTFLoader();
+  const loader = newLoader();
   const asked = new Set<number>();
   return (outfit: number) => {
     if (outfit < 0 || outfit >= OUTFIT_COUNT || asked.has(outfit)) return;
