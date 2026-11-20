@@ -192,11 +192,12 @@ const Journey = () => {
   });
 
   const active = CHAPTERS[activeIndex];
-  const stripTop = `${STRIP_RATIO * 100}svh`;
+  // Measured against the tallest viewport (browser bars hidden), like the stage itself.
+  const stripTop = `calc(var(--stage-h) * ${STRIP_RATIO})`;
 
   return (
     <div ref={containerRef} className="relative bg-[#0a0a0f]" style={{ height: '900vh' }}>
-      <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]">
+      <div className="journey-stage sticky top-0 w-full overflow-hidden bg-gradient-to-b from-[#0a0a0f] via-[#0b0b12] to-[#050507]">
         {/* The walking world */}
         {webgl && <WorldScene progress={progressMV} onUnavailable={onUnavailable} />}
 

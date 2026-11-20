@@ -8,6 +8,21 @@
   --nav-h: 3.5rem;
 }
 
+/* The journey's stage fills the tallest the viewport gets (phone browser bars
+   hidden), so the timeline strip is pinned to the true bottom of the screen and
+   runs behind the browser's toolbar while that is showing. */
+:root {
+  --stage-h: 100vh;
+}
+@supports (height: 100lvh) {
+  :root {
+    --stage-h: 100lvh;
+  }
+}
+.journey-stage {
+  height: var(--stage-h);
+}
+
 /* Journey panels pinned under the nav: they slide up when the nav hides. */
 .under-nav-legend {
   top: max(var(--nav-h), 0.5rem);
