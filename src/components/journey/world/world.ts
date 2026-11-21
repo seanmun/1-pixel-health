@@ -26,7 +26,7 @@ import { createKit } from './kit';
 import { createFigure, outfitIndexAt } from './figure';
 import { buildScenery, ROAD_HALF, WORLD_LEN, xAtYear, yearAtX } from './scenery';
 import { CROPS, plantField } from './crops';
-import { createModelLoader, createWalkerLoader, ModelId, snowUniform, swapIn, WALKERS } from './models';
+import { createModelLoader, createWalkerLoader, ModelId, restore, snowUniform, swapIn, WALKERS } from './models';
 import { progressAtYear } from '../../../utils/timeScale';
 import { getDietData, getDietColor } from '../../../utils/dietUtils';
 import { iceAt } from '../../../data/vitals';
@@ -100,6 +100,8 @@ const fract = (x: number) => x - Math.floor(x);
 const hash = (n: number) => fract(Math.sin(n * 127.1) * 43758.5453);
 
 /** How long after the last movement the picture drops to idle speed, and the gap between idle frames (ms). */
+/** A model is let go once every place it is used is this far (m) beyond the loading range. */
+const UNLOAD_MARGIN = 60;
 const IDLE_AFTER = 600;
 const IDLE_FRAME = 45;
 /** A walking frame slower than this (ms, about 36 a second) counts against the device. */
@@ -237,7 +239,8 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
   // when the walk comes within reach of somewhere it is used, so the page opens
   // on a few megabytes instead of the whole 300,000 years.
   let disposed = false;
-  const planted: InstancedMesh[] = [];
+  /** The plants standing in each field, by the field's index. */
+  const planted = new Map<number, InstancedMesh[]>();
   const unplanted = new Set(scenery.crops.map((_, i) => i));
   const slotsById = new Map<ModelId, Group[]>();
   /** Where along the road each model is used. */
@@ -269,11 +272,32 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     for (const i of unplanted) {
       const spec = CROPS[scenery.crops[i].kind];
       if (!loader.models[spec.model] || !loader.models[spec.far]) continue;
-      planted.push(...plantField(scenery.crops[i], loader.models, i));
+      planted.set(i, plantField(scenery.crops[i], loader.models, i));
       unplanted.delete(i);
     }
     dirty = true;
   });
+  /**
+   * Lets go of a model the walk has left far behind, so a phone's memory holds
+   * one stretch of road and not all 300,000 years. Its placeholders go back, and
+   * it is fetched again (from the browser's own copy) if the walker returns.
+   */
+  const unload = (id: ModelId) => {
+    for (const slot of slotsById.get(id) ?? []) restore(slot);
+    for (const [i, meshes] of planted) {
+      const field = scenery.crops[i];
+      const spec = CROPS[field.kind];
+      if (spec.model !== id && spec.far !== id) continue;
+      for (const mesh of meshes) {
+        field.obj.remove(mesh);
+        mesh.dispose();
+      }
+      field.obj.add(field.rows);
+      planted.delete(i);
+      unplanted.add(i);
+    }
+    loader.release(id);
+  };
   // The spear and hoe are tiny and carried from the first step; the hat and cup
   // come with the stretch of road where they first appear.
   for (const id of ['spear', 'hoe'] as ModelId[]) loader.request(id);
@@ -400,10 +424,13 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     const due: { id: ModelId; gap: number }[] = [];
     for (const [id, xs] of uses) {
       let gap = Infinity;
-      for (const x of xs) if (x > wx - LOAD_BEHIND && x < wx + LOAD_AHEAD) gap = Math.min(gap, Math.abs(x - wx));
-      if (gap === Infinity) continue;
-      due.push({ id, gap });
-      uses.delete(id);
+      let kept = false;
+      for (const x of xs) {
+        if (x > wx - LOAD_BEHIND && x < wx + LOAD_AHEAD) gap = Math.min(gap, Math.abs(x - wx));
+        if (x > wx - LOAD_BEHIND - UNLOAD_MARGIN && x < wx + LOAD_AHEAD + UNLOAD_MARGIN) kept = true;
+      }
+      if (gap !== Infinity) due.push({ id, gap });
+      else if (!kept && loader.models[id] && !(id in CARRIED) && id !== 'crop-duster') unload(id);
     }
     // Nearest first, so what is on screen fills in before what is still ahead.
     due.sort((a, b) => a.gap - b.gap).forEach((d) => loader.request(d.id));
@@ -576,7 +603,7 @@ export const createWorld = (canvas: HTMLCanvasElement): World => {
     },
     dispose: () => {
       disposed = true;
-      planted.forEach((p) => p.dispose());
+      planted.forEach((meshes) => meshes.forEach((m) => m.dispose()));
       loader.dispose();
       cancelAnimationFrame(raf);
       ro.disconnect();

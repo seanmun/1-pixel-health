@@ -185,11 +185,19 @@ export const createModelLoader = (onLoad: (id: ModelId, model: Object3D) => void
     queue.push(id);
     next();
   };
+  /** Frees a loaded model; a later `request` fetches it again. */
+  const release = (id: ModelId) => {
+    const model = models[id];
+    if (!model) return;
+    disposeModels({ [id]: model });
+    delete models[id];
+    asked.delete(id);
+  };
   const dispose = () => {
     stopped = true;
     disposeModels(models);
   };
-  return { request, models, dispose };
+  return { request, release, models, dispose };
 };
 
 /** The three walkers, each with one rigged, walking model per era outfit. */
@@ -224,8 +232,18 @@ export const createWalkerLoader = (
 
 /** Swap a placeholder group's contents for a clone of the finished model. */
 export const swapIn = (slot: Group, model: Object3D) => {
+  slot.userData.placeholder ??= [...slot.children];
   slot.clear();
   slot.add(model.clone());
+};
+
+/** Put a slot's placeholder back, when its model is being let go. */
+export const restore = (slot: Group) => {
+  const placeholder = slot.userData.placeholder as Object3D[] | undefined;
+  if (!placeholder) return;
+  slot.clear();
+  slot.add(...placeholder);
+  delete slot.userData.placeholder;
 };
 
 /** Free GPU resources held by loaded models. */
