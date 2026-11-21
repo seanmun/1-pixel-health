@@ -93,7 +93,8 @@ interface Sample {
   comp: DietComposition;
 }
 
-function render(
+/** Draws the stacked diet graph into a canvas; `zoom` 0 is the whole timeline. */
+export function render(
   ctx: CanvasRenderingContext2D,
   size: { w: number; h: number; dpr: number },
   zoom: number,

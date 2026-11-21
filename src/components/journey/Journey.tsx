@@ -41,6 +41,30 @@ const STRIP_RATIO = 0.13;
 // Length of one walking step in world units, for the "years per step" readout.
 const STEP_LENGTH = 0.75;
 
+// Share links for the closing panel. The picture and wording each site shows
+// come from the tags in index.html (and public/share.png), not from these links.
+const SHARE_URL = encodeURIComponent('https://www.human-diet.com/');
+const SHARE_TEXT = encodeURIComponent(
+  '300,000 years of the human diet on one linear timeline. Nearly all of it looks the same. Then the last sliver happens.'
+);
+const SHARE = [
+  {
+    name: 'X',
+    href: `https://twitter.com/intent/tweet?text=${SHARE_TEXT}&url=${SHARE_URL}`,
+    icon: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+  },
+  {
+    name: 'Facebook',
+    href: `https://www.facebook.com/sharer/sharer.php?u=${SHARE_URL}`,
+    icon: 'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z',
+  },
+  {
+    name: 'LinkedIn',
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${SHARE_URL}`,
+    icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+  },
+];
+
 type Phase = 'intro' | 'reveal' | 'outro';
 
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
@@ -457,6 +481,31 @@ const Journey = () => {
             Seed oils and ultra-processed foods went from 0% to more than half
             our diet — in roughly the last 0.07% of human history.
           </p>
+          <div
+            className={`mt-8 flex flex-col items-center gap-3 ${
+              phase === 'outro' ? 'pointer-events-auto' : 'pointer-events-none'
+            }`}
+          >
+            <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/50">Share the walk</div>
+            <div className="flex items-center gap-3">
+              {SHARE.map((s) => (
+                <a
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Share on ${s.name}`}
+                  title={`Share on ${s.name}`}
+                  tabIndex={phase === 'outro' ? 0 : -1}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                >
+                  <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
+                    <path d={s.icon} />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
         </div>
       </div>
